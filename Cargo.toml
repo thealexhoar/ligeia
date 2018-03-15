@@ -1,0 +1,10 @@
+[package]
+name = "ligeia"
+version = "0.1.0"
+authors = ["Alex Hoar <thealexhoar@gmail.com>"]
+
+[dependencies]
+liquidfun = { path = "liquidfun-rust" }
+sfml = { path = "rust-sfml"}
+specs = "0.10.0"
+specs-derive = "0.1.0"
