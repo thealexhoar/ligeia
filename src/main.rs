@@ -1,3 +1,22 @@
+extern crate liquidfun;
+extern crate sfml;
+extern crate specs;
+#[macro_use]
+extern crate specs_derive;
+
+mod components;
+mod game;
+mod graphics;
+mod physics;
+mod systems;
+mod util;
+
 fn main() {
-    println!("Hello, world!");
+    let mut core = game::Core::new(800, 600, "Ligeia 0.0.0");
+    loop {
+        core.update();
+        if core.should_close() {
+            break;
+        }
+    }
 }
