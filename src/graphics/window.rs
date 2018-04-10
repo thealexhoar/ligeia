@@ -1,4 +1,5 @@
-use sfml::graphics::{Color, RenderStates, RenderTarget, RenderWindow, VertexArray};
+use sfml::graphics::{Color, RenderStates, RenderTarget, RenderWindow, VertexArray, View};
+use sfml::system::Vector2f;
 use sfml::window::{ContextSettings, Event, Style, VideoMode};
 
 pub struct Window {
@@ -8,7 +9,7 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(width: u32, height: u32, title: &str) -> Self {
+    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, title: &str) -> Self {
         let mode = VideoMode { width, height, bits_per_pixel: 32 };
         let style = Style::CLOSE;
         let settings = ContextSettings::default();
@@ -16,16 +17,19 @@ impl Window {
         let mut window = RenderWindow::new(mode, title, style, &settings);
         window.set_vertical_sync_enabled(true);
 
+        let mut view = View::new(Vector2f{x: 0., y: 0.}, Vector2f {x: internal_width as f32, y: internal_height as f32});
+        window.set_view(&view);
+
         Self {
-            _clear_color: Color::rgb(0, 111, 180),
+            _clear_color: Color::rgb(220, 111, 180),
             _should_close: false,
             _window: window
         }
     }
 
     pub fn clear(&mut self) {
-        self._clear_color.r += 1;
-        self._clear_color.r %= 255;
+        //self._clear_color.r += 1;
+        //self._clear_color.r %= 255;
         self._window.clear(&self._clear_color);
     }
 

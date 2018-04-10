@@ -1,5 +1,3 @@
 
 
-pub struct Sprite {
-
-}
+pub struct Sprite {}
