@@ -1,11 +1,12 @@
-use sfml::graphics::{Color, RenderStates, RenderTarget, RenderWindow, VertexArray, View};
+use sfml::graphics::{Color, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex, VertexArray, View};
 use sfml::system::Vector2f;
 use sfml::window::{ContextSettings, Event, Style, VideoMode};
+
 
 pub struct Window {
     _clear_color: Color,
     _should_close: bool,
-    _window: RenderWindow
+    _window: RenderWindow,
 }
 
 impl Window {
@@ -20,6 +21,7 @@ impl Window {
         let mut view = View::new(Vector2f{x: 0., y: 0.}, Vector2f {x: internal_width as f32, y: internal_height as f32});
         window.set_view(&view);
 
+
         Self {
             _clear_color: Color::rgb(220, 111, 180),
             _should_close: false,
@@ -33,8 +35,12 @@ impl Window {
         self._window.clear(&self._clear_color);
     }
 
-    pub fn draw_vertices<'a>(&mut self, vertices: &VertexArray, states: RenderStates<'a, 'a, 'a>) {
+    pub fn draw_vertex_array<'a>(&mut self, vertices: &VertexArray, states: RenderStates<'a, 'a, 'a>) {
         self._window.draw_vertex_array(vertices, states);
+    }
+
+    pub fn draw_vertices<'a>(&mut self, vertices: &[Vertex], states: RenderStates<'a, 'a, 'a>) {
+        self._window.draw_primitives(vertices, PrimitiveType::Quads, states);
     }
 
     pub fn display(&mut self) {

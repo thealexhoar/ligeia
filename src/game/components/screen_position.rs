@@ -7,7 +7,17 @@ use util::Fabricator;
 
 #[derive(Clone, Copy, Component, Debug)]
 #[component(VecStorage)]
-pub struct ScreenPosition {}
+pub struct ScreenPosition {
+    pub x: f32,
+    pub y: f32,
+    pub theta: f32
+}
+
+impl ScreenPosition {
+    pub fn new(x: f32, y: f32, theta: f32) -> Self {
+        Self {x, y, theta}
+    }
+}
 
 pub struct ScreenPositionFabricator;
 

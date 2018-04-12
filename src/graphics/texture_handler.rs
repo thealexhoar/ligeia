@@ -37,7 +37,7 @@ impl TextureHandler {
     }
 
     pub fn get_texture(&self, handle: TextureHandle) -> Option<&Texture> {
-        match self._textures.get(&handle) {
+        match self ._textures.get(&handle) {
             Some(t_box) => Some(t_box.deref()),
             None        => None
         }

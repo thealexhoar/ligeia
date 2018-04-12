@@ -1,9 +1,9 @@
 
 
 pub struct ManagedCamera {
-    _x: f32,
-    _y: f32,
-    _theta: f32,
+    pub x: f32,
+    pub y: f32,
+    pub theta: f32,
     _width: f32,
     _height: f32,
     _r2: f32
@@ -14,9 +14,9 @@ impl ManagedCamera {
         let r2 = (width * width + height * height) * 0.25;
 
         Self {
-            _x: x,
-            _y: y,
-            _theta: theta,
+            x,
+            y,
+            theta,
             _width: width,
             _height: height,
             _r2: r2
@@ -24,10 +24,10 @@ impl ManagedCamera {
     }
 
     pub fn transform_world_point(&self, x:f32, y:f32) -> (f32, f32) {
-        let trans_x = x - self._x;
-        let trans_y = y - self._y;
-        let s_t = self._theta.sin();
-        let c_t = self._theta.cos();
+        let trans_x = x - self.x;
+        let trans_y = y - self.y;
+        let s_t = self.theta.sin();
+        let c_t = self.theta.cos();
         let rot_x = c_t * trans_x - s_t * trans_y;
         let rot_y = s_t * trans_x + c_t * trans_y;
 
@@ -35,7 +35,7 @@ impl ManagedCamera {
     }
 
     pub fn transform_world_angle(&self, theta:f32) -> f32 {
-        theta - self._theta
+        theta - self.theta
     }
 
     pub fn get_sqr_radius(&self) -> f32 {

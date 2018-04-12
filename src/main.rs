@@ -1,4 +1,7 @@
 extern crate liquidfun;
+extern crate serde;
+#[macro_use]
+extern crate serde_json;
 extern crate sfml;
 extern crate specs;
 #[macro_use]

@@ -3,37 +3,34 @@ use std::any::{Any, TypeId};
 use std::ops::Deref;
 use std::sync::Arc;
 
+use graphics::Sprite;
 use util::Fabricator;
 
 #[derive(Clone, Copy, Component, Debug)]
 #[component(VecStorage)]
-pub struct WorldPosition {
-    pub x: f32,
-    pub y: f32,
-    pub theta: f32
+pub struct SpriteRenderable {
+    pub sprite: Sprite
 }
 
-impl WorldPosition {
-    pub fn new(x: f32, y: f32, theta: f32) -> Self {
-        Self {x, y, theta}
+impl SpriteRenderable {
+    pub fn new(sprite: Sprite) -> Self {
+        Self {sprite}
     }
 }
 
-pub struct WorldPositionFabricator;
+pub struct SpriteRenderableFabricator;
 
-impl Fabricator for WorldPositionFabricator {
+impl Fabricator for SpriteRenderableFabricator {
     fn get_type_id(&self) -> TypeId {
-        TypeId::of::<WorldPosition>()
+        TypeId::of::<SpriteRenderable>()
     }
 
     fn build_onto<'a>(&self, data: Box<Any>, entity_builder: EntityBuilder<'a>) -> EntityBuilder<'a> {
-        if let Ok(world_pos) = data.downcast::<WorldPosition>() {
-            entity_builder.with(*world_pos.deref())
+        if let Ok(sprite_renderable) = data.downcast::<SpriteRenderable>() {
+            entity_builder.with(*sprite_renderable.deref())
         }
         else {
             entity_builder
         }
     }
 }
-
-
