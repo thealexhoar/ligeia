@@ -13,7 +13,8 @@ impl<'a> System<'a> for CameraTransformer {
             let (screen_x, screen_y) = camera.transform_world_point(world_pos.x, world_pos.y);
             screen_pos.x = screen_x;
             screen_pos.y = screen_y;
-            screen_pos.theta = camera.transform_world_angle(world_pos.theta);
+            screen_pos.theta = world_pos.theta;
+            screen_pos.camera_theta = camera.transform_world_angle(world_pos.theta);
         }
     }
 }

@@ -1,11 +1,13 @@
 use sfml::graphics::{Color, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex, VertexArray, View};
-use sfml::system::Vector2f;
+use sfml::system::{Clock, Time, Vector2f};
 use sfml::window::{ContextSettings, Event, Style, VideoMode};
 
 
 pub struct Window {
     _clear_color: Color,
     _should_close: bool,
+    _clock: Clock,
+    _delta_time: Time,
     _window: RenderWindow,
 }
 
@@ -25,6 +27,8 @@ impl Window {
         Self {
             _clear_color: Color::rgb(220, 111, 180),
             _should_close: false,
+            _clock: Clock::start(),
+            _delta_time: Time::seconds(0.),
             _window: window
         }
     }
@@ -43,8 +47,13 @@ impl Window {
         self._window.draw_primitives(vertices, PrimitiveType::Quads, states);
     }
 
+    pub fn delta_time(&self) -> f32{
+        self._delta_time.as_seconds()
+    }
+
     pub fn display(&mut self) {
         self._window.display();
+        self._delta_time = self._clock.restart();
     }
 
     pub fn process_events(&mut self) {

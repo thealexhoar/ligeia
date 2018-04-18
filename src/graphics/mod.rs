@@ -1,13 +1,19 @@
+mod animation_def;
+mod layer_def;
 mod layered_sprite;
 mod managed_camera;
+mod renderable;
 mod shader_handler;
 mod sprite;
 mod texture_handler;
 mod vertex;
 mod window;
 
+pub use self::animation_def::AnimationDef;
+pub use self::layer_def::LayerDef;
 pub use self::layered_sprite::LayeredSprite;
 pub use self::managed_camera::ManagedCamera;
+pub use self::renderable::Renderable;
 pub use self::shader_handler::{ShaderHandle, ShaderHandler};
 pub use self::sprite::Sprite;
 pub use self::texture_handler::{TextureHandle, TextureHandler};

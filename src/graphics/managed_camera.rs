@@ -6,7 +6,7 @@ pub struct ManagedCamera {
     pub theta: f32,
     _width: f32,
     _height: f32,
-    _r2: f32
+    _radius: f32
 }
 
 impl ManagedCamera {
@@ -19,7 +19,7 @@ impl ManagedCamera {
             theta,
             _width: width,
             _height: height,
-            _r2: r2
+            _radius: r2.sqrt()
         }
     }
 
@@ -38,7 +38,13 @@ impl ManagedCamera {
         theta - self.theta
     }
 
-    pub fn get_sqr_radius(&self) -> f32 {
-        self._r2
+    pub fn overlaps_with(&self, x: f32, y: f32, radius: f32) -> bool {
+        let dx = self.x - x;
+        let dy = self.y - y;
+        let dx2 = dx * dx;
+        let dy2 = dy * dy;
+        let rad_sum = self._radius + radius;
+
+        return (dx2 + dy2) <= (rad_sum * rad_sum);
     }
 }

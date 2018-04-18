@@ -4,13 +4,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
+use std::sync::Arc;
 
 use game::{Scene, SceneID};
 use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use graphics::{ManagedCamera, ShaderHandler, Sprite, TextureHandler, Window};
+use graphics::{ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
 use util::{FabricationDef, MasterFabricator};
 
 pub struct Core<'a> {
@@ -89,25 +90,33 @@ impl<'a> Core<'a> {
             let mut window= self._window.borrow_mut();
             window.clear();
         }
+
         if self._current_scene > 0 {
             self._scenes.get_mut(&self._current_scene).unwrap().update(&self._world);
         }
 
-        {
-            let mut window= self._window.borrow_mut();
+
+        let dt = {
+            //borrow window inside a smaller scope, to drop the borrow at the end
+            let mut window = self._window.borrow_mut();
             window.process_events();
             window.display();
-        }
+
+            //and snag delta_time while we have a borrow on window
+            window.delta_time()
+        };
+        *(self._world.write_resource::<DeltaTime>().deref_mut()) = dt;
+
 
         let next_scene = self._world.read_resource::<NextScene>().deref().clone();
-
         if let Some(next_scene_id) = next_scene {
             self.try_change_scene(next_scene_id);
         }
 
         self.update_entities();
 
-        self._world.write_resource::<ManagedCamera>().theta += 0.001;
+        //test
+        self._world.write_resource::<ManagedCamera>().theta += 0.005;
     }
 
     pub fn should_close(&self) -> bool {
@@ -116,7 +125,7 @@ impl<'a> Core<'a> {
 
     fn init_world(&mut self, internal_width: u32, internal_height: u32) {
         self._world.register::<ScreenPosition>();
-        self._world.register::<SpriteRenderable>();
+        self._world.register::<WorldRenderable>();
         self._world.register::<WorldPosition>();
 
         self._world.add_resource(0. as DeltaTime);
@@ -124,20 +133,23 @@ impl<'a> Core<'a> {
         self._world.add_resource(EntitiesToKill::new());
         self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(Some(1 as usize) as NextScene);
+        self._world.add_resource(0 as VerticesNeeded);
 
-        self._master_fabricator.register(WorldPositionFabricator);
         self._master_fabricator.register(ScreenPositionFabricator);
-        self._master_fabricator.register(SpriteRenderableFabricator);
+        self._master_fabricator.register(WorldPositionFabricator);
+        self._master_fabricator.register(WorldRenderableFabricator);
 
 
         //test code
-        let mut test_f_def = FabricationDef::new();
-        test_f_def.add_component(WorldPosition{x: 0., y: 0., theta: 0.});
-        test_f_def.add_component(ScreenPosition{x: 0., y: 0., theta: 0.});
-        test_f_def.add_component(SpriteRenderable::new(
-            Sprite::new_centered(328., 160., 0)
-        ));
-        self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+        for i in 0..8000 {
+            let mut test_f_def = FabricationDef::new();
+            test_f_def.add_component(WorldPosition::new(0., 0., (i as f32) * 0.0002));
+            test_f_def.add_component(ScreenPosition::new());
+            test_f_def.add_component(WorldRenderable::new(
+                Arc::new(Sprite::new_centered(82., 40., 0)) as Arc<Renderable + Sync + Send>
+            ));
+            self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+        }
     }
 
     fn update_entities(&mut self) {

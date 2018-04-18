@@ -10,12 +10,20 @@ use util::Fabricator;
 pub struct ScreenPosition {
     pub x: f32,
     pub y: f32,
-    pub theta: f32
+    pub theta: f32,
+    pub camera_theta: f32,
+    pub vertex_index: Option<usize>
 }
 
 impl ScreenPosition {
-    pub fn new(x: f32, y: f32, theta: f32) -> Self {
-        Self {x, y, theta}
+    pub fn new() -> Self {
+        Self {
+            x: 0.,
+            y: 0.,
+            theta: 0.,
+            camera_theta: 0.,
+            vertex_index: Option::None
+        }
     }
 }
 

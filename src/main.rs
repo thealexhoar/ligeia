@@ -1,3 +1,4 @@
+extern crate bit_set;
 extern crate liquidfun;
 extern crate serde;
 #[macro_use]
