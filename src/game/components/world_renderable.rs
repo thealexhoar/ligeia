@@ -16,6 +16,7 @@ impl WorldRenderable {
     pub fn new(renderable: Arc<Renderable + Sync + Send + 'static>) -> Self {
         Self {renderable}
     }
+
 }
 
 pub struct WorldRenderableFabricator;

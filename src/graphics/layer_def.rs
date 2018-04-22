@@ -1,6 +1,6 @@
-use sfml::graphics::FloatRect;
 use std::collections::HashMap;
 
+use util::FloatRect;
 
 
 pub struct LayerDef {

@@ -19,13 +19,14 @@ impl<'a> System<'a> for ScreenSort {
 
     fn run(&mut self, (entities, camera, mut vertices_needed, world_renderable, mut screen_pos): Self::SystemData) {
         let mut entity_vec = Vec::new();
-        for (entity, world_renderable, screen_pos) in (entities.deref(), &world_renderable, &screen_pos).join() {
-            let radius = world_renderable.renderable.radius();
-            if camera.overlaps_with(screen_pos.x, screen_pos.y, radius) {
+        for (entity, world_renderable, mut screen_pos) in (entities.deref(), &world_renderable, &mut screen_pos).join() {
+            screen_pos.vertex_index = None;
+            if camera.overlaps_with(screen_pos.x, screen_pos.y, world_renderable.renderable.rect()) {
                 entity_vec.push(entity);
             }
         }
-        entity_vec.sort_by(|e1, e2| screen_pos.get(*e1).unwrap().y.partial_cmp(&screen_pos.get(*e2).unwrap().y).unwrap());
+
+        entity_vec.sort_by(|e1, e2| (screen_pos.get(*e1).unwrap().y.partial_cmp(&screen_pos.get(*e2).unwrap().y).unwrap()));
 
         let mut vert_sum = 0;
         for e in &entity_vec {
@@ -34,7 +35,6 @@ impl<'a> System<'a> for ScreenSort {
             sp.vertex_index = Some(vert_sum);
             vert_sum += verts;
         }
-
         *vertices_needed.deref_mut() = vert_sum;
     }
 }

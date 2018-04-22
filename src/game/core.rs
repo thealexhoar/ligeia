@@ -1,4 +1,3 @@
-use sfml::graphics::FloatRect;
 use specs::{Dispatcher, DispatcherBuilder, World};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -11,8 +10,8 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use graphics::{ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
-use util::{FabricationDef, MasterFabricator};
+use graphics::{LayerDef, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
+use util::{FabricationDef, FloatRect, MasterFabricator};
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -64,7 +63,7 @@ impl<'a> Core<'a> {
         );
 
         let mut t_h = texture_handler.borrow_mut();
-        t_h.load_texture("assets/textures/dungeon_sheet.png");
+        t_h.load_texture("assets/textures/crate_small.png");
 
         core
     }
@@ -117,6 +116,7 @@ impl<'a> Core<'a> {
 
         //test
         self._world.write_resource::<ManagedCamera>().theta += 0.005;
+        self._world.write_resource::<ManagedCamera>().x += 0.01;
     }
 
     pub fn should_close(&self) -> bool {
@@ -131,7 +131,7 @@ impl<'a> Core<'a> {
         self._world.add_resource(0. as DeltaTime);
         self._world.add_resource(EntitiesToAdd::new());
         self._world.add_resource(EntitiesToKill::new());
-        self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
+        self._world.add_resource(ManagedCamera::new(10., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(Some(1 as usize) as NextScene);
         self._world.add_resource(0 as VerticesNeeded);
 
@@ -140,15 +140,36 @@ impl<'a> Core<'a> {
         self._master_fabricator.register(WorldRenderableFabricator);
 
 
+        let mut layer_def_1 = LayerDef { layers: HashMap::new() };
+        layer_def_1.layers.insert(0, FloatRect::new_square(0., 0., 16.));
+        layer_def_1.layers.insert(1, FloatRect::new_square(16., 0., 16.));
+        layer_def_1.layers.insert(2, FloatRect::new_square(32., 0., 16.));
+        layer_def_1.layers.insert(3, FloatRect::new_square(32., 0., 16.));
+        layer_def_1.layers.insert(4, FloatRect::new_square(32., 0., 16.));
+        layer_def_1.layers.insert(5, FloatRect::new_square(16., 0., 16.));
+        layer_def_1.layers.insert(6, FloatRect::new_square(48., 0., 16.));
+
+        let mut layer_def_2 = LayerDef { layers: HashMap::new() };
+        layer_def_2.layers.insert(0, FloatRect::new_square(0., 0., 8.));
+        layer_def_2.layers.insert(1, FloatRect::new_square(8., 0., 8.));
+        layer_def_2.layers.insert(2, FloatRect::new_square(8., 0., 8.));
+        layer_def_2.layers.insert(3, FloatRect::new_square(8., 0., 8.));
+        layer_def_2.layers.insert(4, FloatRect::new_square(16., 0., 8.));
+        layer_def_2.layers.insert(5, FloatRect::new_square(24., 0., 8.));
+
+        let renderable = Arc::new(LayeredSprite::new(0., 0., 8., 8., &layer_def_2)) as Arc<Renderable + Sync + Send>;
+
+
         //test code
-        for i in 0..8000 {
-            let mut test_f_def = FabricationDef::new();
-            test_f_def.add_component(WorldPosition::new(0., 0., (i as f32) * 0.0002));
-            test_f_def.add_component(ScreenPosition::new());
-            test_f_def.add_component(WorldRenderable::new(
-                Arc::new(Sprite::new_centered(82., 40., 0)) as Arc<Renderable + Sync + Send>
-            ));
-            self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+        let sq = 122;
+        for i in (-sq / 2)..sq/2 {
+            for j in (-sq / 2)..sq/2 {
+                let mut test_f_def = FabricationDef::new();
+                test_f_def.add_component(WorldPosition::new(12. * i as f32, 12. * j as f32, (i as f32).atan2(j as f32)));
+                test_f_def.add_component(ScreenPosition::new());
+                test_f_def.add_component(WorldRenderable::new(renderable.clone()));
+                self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+            }
         }
     }
 

@@ -1,9 +1,11 @@
-use sfml::graphics::{FloatRect, Vertex};
-use graphics::{Renderable, ShaderHandle, TextureHandle};
+use sfml::graphics::{Vertex};
+
+use graphics::{Renderable};
+use util::FloatRect;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Sprite {
-    _radius: f32,
+    _rect: FloatRect,
     _vertices: [Vertex; 4]
 }
 
@@ -16,10 +18,10 @@ Vertices in a sprite go clockwise as such:
 
 impl Sprite {
     pub fn new(origin_x: f32, origin_y: f32, width: f32, height: f32, tex_rect: &FloatRect) -> Self {
+        let radius = ((width * width + height * height) as f32 * 0.25).sqrt();
         let mut sprite = Self {
-            _vertices: [Vertex::default(); 4],
-            _radius: ((width * width + height * height) * 0.25 as f32).sqrt()
-                   + ((origin_x * origin_x + origin_y * origin_y) * 0.25 as f32).sqrt()
+            _rect: FloatRect::new_square(origin_x - radius, origin_y - radius, radius * 2.),
+            _vertices: [Vertex::default(); 4]
         };
 
         sprite.set_local_vertices(origin_x, origin_y, width, height);
@@ -78,22 +80,6 @@ impl Sprite {
         world_verts
     }
 
-    pub fn get_shader_handle(&self) -> ShaderHandle {
-        self._shader_handle
-    }
-
-    pub fn set_shader_handle(&mut self, handle: ShaderHandle) {
-        self._shader_handle = handle
-    }
-
-    pub fn get_tex_handle(&self) -> TextureHandle {
-        self._texture_handle
-    }
-
-    pub fn set_tex_handle(&mut self, handle: TextureHandle) {
-        self._texture_handle = handle;
-    }
-
     pub fn set_tex_rect(&mut self, rect: &FloatRect) {
         self._vertices[0].tex_coords.x = rect.left;
         self._vertices[0].tex_coords.y = rect.top;
@@ -110,16 +96,16 @@ impl Sprite {
 }
 
 impl Renderable for Sprite {
-    fn radius(&self) -> f32 { self._radius }
+    fn rect(&self) -> &FloatRect { &self._rect }
 
     fn vertices_needed(&self) -> usize { 4 }
 
     fn write_to_vertices(&self, x: f32, y: f32, theta: f32, camera_theta: f32, target: &mut [Vertex]) {
         for i in 0..4 {
-            let old_x = self._vertices[i].position.x;
+            let local_x = self._vertices[i].position.x;
             let old_y = self._vertices[i].position.y;
-            target[i].position.x = (old_x * theta.cos() - old_y * theta.sin()) + x;
-            target[i].position.y = (old_x * theta.sin() + old_y * theta.cos()) + y;
+            target[i].position.x = (local_x * theta.cos() - old_y * theta.sin()) + x;
+            target[i].position.y = (local_x * theta.sin() + old_y * theta.cos()) + y;
             target[i].tex_coords = self._vertices[i].tex_coords;
         }
     }
