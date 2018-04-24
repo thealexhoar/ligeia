@@ -52,4 +52,8 @@ impl<'a> ShaderHandler<'a> {
     pub fn get_shader(&self, handle: ShaderHandle) -> Option<&Shader> {
         self._shaders.get(&handle)
     }
+
+    pub fn get_default(&self) -> Option<&Shader> {
+        self._shaders.get(&0)
+    }
 }

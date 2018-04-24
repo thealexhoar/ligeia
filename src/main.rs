@@ -1,5 +1,6 @@
 extern crate bit_set;
 extern crate liquidfun;
+extern crate num_traits;
 extern crate serde;
 #[macro_use]
 extern crate serde_json;

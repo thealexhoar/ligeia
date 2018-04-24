@@ -57,11 +57,11 @@ impl<'a, 'b> System<'a> for Renderer<'b> {
 
         let texture_handler = self._texture_handler.borrow();
         //let texture_ref = texture_handler.get_texture(sprite.get_tex_handle()).unwrap();
-        let texture_ref = texture_handler.get_texture(0).unwrap();
+        let texture_ref = texture_handler.get_master_texture();
 
         let shader_handler = self._shader_handler.borrow();
         //let shader_ref = shader_handler.get_shader(sprite.get_shader_handle()).unwrap();
-        let shader_ref = shader_handler.get_shader(0).unwrap();
+        let shader_ref = shader_handler.get_default().unwrap();
 
         let mut render_states = RenderStates::default();
         render_states.texture = Some(texture_ref);

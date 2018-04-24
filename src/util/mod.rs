@@ -1,7 +1,7 @@
 mod fabrication;
 mod file_loader;
-mod float_rect;
+mod rect;
 
 pub use self::fabrication::{FabricationDef, Fabricator, MasterFabricator};
 pub use self::file_loader::FileReader;
-pub use self::float_rect::FloatRect;
+pub use self::rect::{FloatRect, IntRect, Rect, UIntRect};

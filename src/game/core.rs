@@ -10,8 +10,8 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use graphics::{LayerDef, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
-use util::{FabricationDef, FloatRect, MasterFabricator};
+use graphics::{LayerDef, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureDef, TextureHandler, Window};
+use util::{FabricationDef, FloatRect, MasterFabricator, UIntRect};
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -39,6 +39,23 @@ impl<'a> Core<'a> {
             _master_fabricator: MasterFabricator::new()
         };
 
+        {
+            let mut t_h = texture_handler.borrow_mut();
+            let texture_defs = vec![
+                TextureDef {
+                    filename: String::from("assets/textures/crate_small.png"),
+                    frames: vec![
+                        UIntRect::new_square(0, 0, 8),
+                        UIntRect::new_square(8, 0, 8),
+                        UIntRect::new_square(16, 0, 8),
+                        UIntRect::new_square(24, 0, 8),
+                    ]
+                }
+            ];
+            t_h.load_texture_defs(texture_defs, core._shader_handler.borrow().deref());
+        }
+        //t_h.load_texture("assets/textures/crate_small.png");
+
         core.init_world(internal_width, internal_height);
 
         let dispatcher_builder = DispatcherBuilder::new();
@@ -62,8 +79,7 @@ impl<'a> Core<'a> {
             )
         );
 
-        let mut t_h = texture_handler.borrow_mut();
-        t_h.load_texture("assets/textures/crate_small.png");
+
 
         core
     }
@@ -99,7 +115,7 @@ impl<'a> Core<'a> {
             //borrow window inside a smaller scope, to drop the borrow at the end
             let mut window = self._window.borrow_mut();
             window.process_events();
-            window.display();
+            window.display(&self._shader_handler.deref().borrow());
 
             //and snag delta_time while we have a borrow on window
             window.delta_time()
@@ -115,8 +131,8 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 0.005;
-        self._world.write_resource::<ManagedCamera>().x += 0.01;
+        self._world.write_resource::<ManagedCamera>().theta += 0.002;
+        self._world.write_resource::<ManagedCamera>().x += 0.1;
     }
 
     pub fn should_close(&self) -> bool {
@@ -139,33 +155,29 @@ impl<'a> Core<'a> {
         self._master_fabricator.register(WorldPositionFabricator);
         self._master_fabricator.register(WorldRenderableFabricator);
 
+        let mut layer_def = LayerDef { layers: HashMap::new() };
 
-        let mut layer_def_1 = LayerDef { layers: HashMap::new() };
-        layer_def_1.layers.insert(0, FloatRect::new_square(0., 0., 16.));
-        layer_def_1.layers.insert(1, FloatRect::new_square(16., 0., 16.));
-        layer_def_1.layers.insert(2, FloatRect::new_square(32., 0., 16.));
-        layer_def_1.layers.insert(3, FloatRect::new_square(32., 0., 16.));
-        layer_def_1.layers.insert(4, FloatRect::new_square(32., 0., 16.));
-        layer_def_1.layers.insert(5, FloatRect::new_square(16., 0., 16.));
-        layer_def_1.layers.insert(6, FloatRect::new_square(48., 0., 16.));
+        {
+            let texture_handler = self._texture_handler.borrow();
+            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/crate_small.png"));
 
-        let mut layer_def_2 = LayerDef { layers: HashMap::new() };
-        layer_def_2.layers.insert(0, FloatRect::new_square(0., 0., 8.));
-        layer_def_2.layers.insert(1, FloatRect::new_square(8., 0., 8.));
-        layer_def_2.layers.insert(2, FloatRect::new_square(8., 0., 8.));
-        layer_def_2.layers.insert(3, FloatRect::new_square(8., 0., 8.));
-        layer_def_2.layers.insert(4, FloatRect::new_square(16., 0., 8.));
-        layer_def_2.layers.insert(5, FloatRect::new_square(24., 0., 8.));
+            layer_def.layers.insert(0, texture_rects[0]);
+            layer_def.layers.insert(1, texture_rects[1]);
+            layer_def.layers.insert(2, texture_rects[1]);
+            layer_def.layers.insert(3, texture_rects[1]);
+            layer_def.layers.insert(4, texture_rects[2]);
+            layer_def.layers.insert(5, texture_rects[3]);
+        }
 
-        let renderable = Arc::new(LayeredSprite::new(0., 0., 8., 8., &layer_def_2)) as Arc<Renderable + Sync + Send>;
+        let renderable = Arc::new(LayeredSprite::new(0., 0., 8., 8., &layer_def)) as Arc<Renderable + Sync + Send>;
 
 
         //test code
-        let sq = 122;
+        let sq = 120;
         for i in (-sq / 2)..sq/2 {
             for j in (-sq / 2)..sq/2 {
                 let mut test_f_def = FabricationDef::new();
-                test_f_def.add_component(WorldPosition::new(12. * i as f32, 12. * j as f32, (i as f32).atan2(j as f32)));
+                test_f_def.add_component(WorldPosition::new(15. * i as f32, 15. * j as f32, 0.));
                 test_f_def.add_component(ScreenPosition::new());
                 test_f_def.add_component(WorldRenderable::new(renderable.clone()));
                 self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
