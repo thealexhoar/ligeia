@@ -8,8 +8,9 @@ use util::{FloatRect, UIntRect};
 
 pub type TextureHandle = u32;
 
-static MASTER_TEXTURE_SIZE: u32 = 1024;
-static MASTER_TEXTURE_SIZE_F: f32 = 1024.;
+static MASTER_TEXTURE_SIZE: u32 = 4096;
+static MASTER_TEXTURE_SIZE_F: f32 = 4096.;
+static CLEAR_COLOR: Color = Color::TRANSPARENT;
 
 pub struct TextureHandler {
     _handle_gen: TextureHandle,
@@ -49,7 +50,7 @@ impl TextureHandler {
             Vector2f { x: MASTER_TEXTURE_SIZE_F, y: -MASTER_TEXTURE_SIZE_F}
         );
         self._master_texture.set_view(&view);
-        self._master_texture.clear(&Color::RED);
+        self._master_texture.clear(&CLEAR_COLOR);
 
         let mut top: u32 = 0;
         let mut left: u32 = 0;
@@ -62,7 +63,7 @@ impl TextureHandler {
             if left == 0 {
                 next_top = top + height;
             }
-            else if left + width> MASTER_TEXTURE_SIZE {
+            else if left + width > MASTER_TEXTURE_SIZE {
                 top = next_top;
                 left = 0;
             }
@@ -114,6 +115,8 @@ impl TextureHandler {
                 frame_vec.push(uv_frame);
             }
             self._sub_textures.insert(filename.clone(), frame_vec);
+
+            left += width;
         }
 
         self._master_texture.display();

@@ -19,6 +19,8 @@ impl<'a> System<'a> for ScreenSort {
 
     fn run(&mut self, (entities, camera, mut vertices_needed, world_renderable, mut screen_pos): Self::SystemData) {
         let mut entity_vec = Vec::new();
+        
+        //screenspace culling
         for (entity, world_renderable, mut screen_pos) in (entities.deref(), &world_renderable, &mut screen_pos).join() {
             screen_pos.vertex_index = None;
             if camera.overlaps_with(screen_pos.x, screen_pos.y, world_renderable.renderable.rect()) {

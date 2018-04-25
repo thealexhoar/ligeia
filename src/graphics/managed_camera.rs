@@ -14,7 +14,7 @@ impl ManagedCamera {
     pub fn new(x: f32, y: f32, theta: f32, width: f32, height: f32) -> Self {
         let radius = ((width * width + height * height) as f32 * 0.25).sqrt();
 
-        let fuzz = 10.;
+        let fuzz = 0.;
         let h_fuzz = 0.5 * fuzz;
 
         Self {

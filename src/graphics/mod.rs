@@ -1,5 +1,6 @@
 mod animation_def;
 mod basic_verts;
+mod directional_sprite;
 mod layer_def;
 mod layered_sprite;
 mod managed_camera;
@@ -13,6 +14,7 @@ mod window;
 
 pub use self::animation_def::AnimationDef;
 pub use self::basic_verts::BASIC_VERTS;
+pub use self::directional_sprite::DirectionalSprite;
 pub use self::layer_def::LayerDef;
 pub use self::layered_sprite::LayeredSprite;
 pub use self::managed_camera::ManagedCamera;

@@ -8,6 +8,7 @@ use util::FloatRect;
 #[derive(Clone, Debug)]
 pub struct LayeredSprite {
     _base_vertices: [(f32, f32); 4],
+    _radius: f32,
     _rect: FloatRect,
     _tex_coords: HashMap<usize, FloatRect>,
     _layer_bits: BitSet,
@@ -39,6 +40,7 @@ impl LayeredSprite {
 
         let mut layered_sprite = Self {
             _base_vertices: [(0., 0.); 4],
+            _radius: radius,
             _rect: FloatRect::new(origin_x - radius, origin_y - radius - (top_layer as f32), radius * 2., radius * 2. + top_layer as f32),
             _tex_coords: tex_coords,
             _layer_bits: layer_bits,
@@ -58,18 +60,20 @@ impl LayeredSprite {
         let h_width = width * 0.5;
         let h_height = height * 0.5;
 
-        self._base_vertices[0] = (origin_x - h_width, origin_y - h_height);
+        self._base_vertices[0] = (-h_width - origin_x, -h_height - origin_y);
 
-        self._base_vertices[1] = (origin_x + h_width, origin_y - h_height);
+        self._base_vertices[1] = (h_width - origin_x, -h_height - origin_y);
 
-        self._base_vertices[2] = (origin_x + h_width, origin_y + h_height);
+        self._base_vertices[2] = (h_width - origin_x, h_height - origin_y);
 
-        self._base_vertices[3] = (origin_x - h_width, origin_y + h_height);
+        self._base_vertices[3] = (-h_width - origin_x, h_height - origin_y);
     }
 }
 
 
 impl Renderable for LayeredSprite {
+    fn radius(&self) -> f32 { self._radius }
+
     fn rect(&self) -> &FloatRect { &self._rect }
 
     fn vertices_needed(&self) -> usize {
