@@ -1,7 +1,7 @@
 use sfml::graphics::{Vertex};
 
 use graphics::{Renderable};
-use util::consts::{TWO_PI, radians_to_direction};
+use util::consts::{TWO_PI, radians_to_direction8};
 use util::FloatRect;
 
 #[derive(Clone, Copy, Debug)]
@@ -70,7 +70,8 @@ impl Renderable for DirectionalSprite {
     fn vertices_needed(&self) -> usize { 4 }
 
     fn write_to_vertices(&self, x: f32, y: f32, theta: f32, camera_theta: f32, target: &mut [Vertex]) {
-        let direction = radians_to_direction(camera_theta);
+        let direction = radians_to_direction8(camera_theta);
+
         let tex_coords = &self._tex_rects[direction as usize];
         for i in 0..4 {
             let (local_x, local_y) = self._vertices[i];

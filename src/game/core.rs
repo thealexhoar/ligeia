@@ -24,10 +24,10 @@ pub struct Core<'a> {
 }
 
 impl<'a> Core<'a> {
-    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, title: &str) -> Self {
+    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, pixel_factor: u32, title: &str) -> Self {
         let shader_handler = Rc::new(RefCell::new(ShaderHandler::new()));
         let texture_handler = Rc::new(RefCell::new(TextureHandler::new()));
-        let window = Rc::new(RefCell::new(Window::new(width, height, internal_width, internal_height, title)));
+        let window = Rc::new(RefCell::new(Window::new(width, height, internal_width, internal_height, pixel_factor, title)));
 
         let mut core = Self {
             _current_scene: 0,
@@ -93,10 +93,22 @@ impl<'a> Core<'a> {
                         UIntRect::new_square(112, 0, 16),
                     ]
                 },
+                TextureDef {
+                    filename: String::from("assets/textures/pedro.png"),
+                    frames: vec![
+                        UIntRect::new(0, 0, 16, 18),
+                        UIntRect::new(16, 0, 16, 18),
+                        UIntRect::new(32, 0, 16, 18),
+                        UIntRect::new(48, 0, 16, 18),
+                        UIntRect::new(64, 0, 16, 18),
+                        UIntRect::new(80, 0, 16, 18),
+                        UIntRect::new(96, 0, 16, 18),
+                        UIntRect::new(112, 0, 16, 18),
+                    ]
+                },
             ];
-            t_h.load_texture_defs(texture_defs, core._shader_handler.borrow().deref());
+            t_h.create_master_texture(texture_defs, core._shader_handler.borrow().deref());
         }
-        //t_h.load_texture("assets/textures/crate_small.png");
 
         core.init_world(internal_width, internal_height);
 
@@ -172,7 +184,7 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 0.008;
+        self._world.write_resource::<ManagedCamera>().theta += 0.02;
     }
 
     pub fn should_close(&self) -> bool {
@@ -252,12 +264,13 @@ impl<'a> Core<'a> {
         //let renderable = Arc::new(LayeredSprite::new(0., 0., 16., 16., &layer_def)) as Arc<Renderable + Sync + Send>;
         let renderable = Arc::new(LayeredSprite::new(0., 0., 16., 12., &layer_def)) as Arc<Renderable + Sync + Send>;
 
-        let gordy_rects = {
+        let direction_rects = {
             let texture_handler = self._texture_handler.borrow();
-            (*texture_handler.deref().get_subrects(String::from("assets/textures/gordy.png"))).clone()
+            (*texture_handler.deref().get_subrects(String::from("assets/textures/pedro.png"))).clone()
         };
         //let renderable2 = Arc::new(Sprite::new(0., 8., 16., 16., &gordy_rects[0]));
-        let renderable2 = Arc::new(DirectionalSprite::new(0., 8., 16., 16., &(gordy_rects)[0..8]));
+        //let renderable2 = Arc::new(DirectionalSprite::new(0., 8., 16., 16., &(gordy_rects)[0..8]));
+        let renderable2 = Arc::new(DirectionalSprite::new(0., 9., 16., 18., &(direction_rects)[0..8]));
 
         //test code
         let sq = 5;

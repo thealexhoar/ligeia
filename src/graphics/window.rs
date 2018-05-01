@@ -14,16 +14,20 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, title: &str) -> Self {
+    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, pixel_factor: u32, title: &str) -> Self {
         let mode = VideoMode { width, height, bits_per_pixel: 32 };
         let style = Style::CLOSE;
         let settings = ContextSettings::default();
 
 
         let target_view = View::new(Vector2f{x: 0., y: 0.}, Vector2f {x: internal_width as f32, y: internal_height as f32});
-        //let mut target_texture = RenderTexture::new(internal_width, internal_height, false).unwrap();
+        let mut target_texture = RenderTexture::new(
+            internal_width * pixel_factor,
+            internal_height * pixel_factor,
+            false
+        ).unwrap();
         //let mut target_texture = RenderTexture::new(internal_width * 2, internal_height * 2, false).unwrap();
-        let mut target_texture = RenderTexture::new(width, height, false).unwrap();
+        //let mut target_texture = RenderTexture::new(width, height, false).unwrap();
         target_texture.set_view(&target_view);
 
         let mut window = RenderWindow::new(mode, title, style, &settings);
@@ -35,7 +39,8 @@ impl Window {
 
 
         Self {
-            _clear_color: Color::rgb(220, 111, 180),
+            //_clear_color: Color::rgb(220, 111, 180),
+            _clear_color: Color::rgb(150, 111, 140),
             _should_close: false,
             _clock: Clock::start(),
             _delta_time: Time::seconds(0.),

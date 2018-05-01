@@ -10,14 +10,14 @@ use game::components::{ScreenPosition, WorldRenderable};
 use game::resources::VerticesNeeded;
 use graphics::{ShaderHandle, ShaderHandler, Sprite, TextureHandle, TextureHandler, Window};
 
-pub struct Renderer<'a> {
+pub struct WorldRenderer<'a> {
     _shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _vertices: Vec<Vertex>,
     _window: Rc<RefCell<Window>>
 }
 
-impl<'a> Renderer<'a> {
+impl<'a> WorldRenderer<'a> {
     pub fn new(
         shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
         texture_handler: Rc<RefCell<TextureHandler>>,
@@ -32,7 +32,7 @@ impl<'a> Renderer<'a> {
     }
 }
 
-impl<'a, 'b> System<'a> for Renderer<'b> {
+impl<'a, 'b> System<'a> for WorldRenderer<'b> {
     type SystemData = (Fetch<'a, VerticesNeeded>, ReadStorage<'a, ScreenPosition>, ReadStorage<'a, WorldRenderable>);
 
     fn run(&mut self, (vertices_needed, screen_pos, world_renderable): Self::SystemData) {

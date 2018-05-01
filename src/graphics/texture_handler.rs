@@ -8,8 +8,8 @@ use util::{FloatRect, UIntRect};
 
 pub type TextureHandle = u32;
 
-static MASTER_TEXTURE_SIZE: u32 = 4096;
-static MASTER_TEXTURE_SIZE_F: f32 = 4096.;
+static MASTER_TEXTURE_SIZE: u32 = 1024;
+static MASTER_TEXTURE_SIZE_F: f32 = 1024.;
 static CLEAR_COLOR: Color = Color::TRANSPARENT;
 
 pub struct TextureHandler {
@@ -29,7 +29,7 @@ impl TextureHandler {
         }
     }
 
-    pub fn load_texture_defs<'a>(&mut self, texture_defs: Vec<TextureDef>, shader_handler: &ShaderHandler<'a>) {
+    pub fn create_master_texture<'a>(&mut self, texture_defs: Vec<TextureDef>, shader_handler: &ShaderHandler<'a>) {
         let mut textures = Vec::<(String, SfBox<Texture>, Vec<UIntRect>)>::with_capacity(texture_defs.len());
 
         self._sub_textures.clear();
@@ -43,7 +43,7 @@ impl TextureHandler {
         }
 
         //sort by height
-        textures.sort_by(|t1, t2| t1.1.deref().size().y.cmp(&t2.1.deref().size().y));
+        textures.sort_by(|t1, t2| t2.1.deref().size().y.cmp(&t1.1.deref().size().y));
 
         let view = View::new(
             Vector2f { x: MASTER_TEXTURE_SIZE_F * 0.5, y: MASTER_TEXTURE_SIZE_F * 0.5},
@@ -60,12 +60,13 @@ impl TextureHandler {
             let width = next_texture.size().x;
             let height = next_texture.size().y;
 
-            if left == 0 {
-                next_top = top + height;
-            }
-            else if left + width > MASTER_TEXTURE_SIZE {
+
+            if left + width >= MASTER_TEXTURE_SIZE {
                 top = next_top;
                 left = 0;
+            }
+            if left == 0 {
+                next_top = top + height;
             }
 
             let mut rs = RenderStates::default();
@@ -118,7 +119,16 @@ impl TextureHandler {
 
             left += width;
         }
-
+        let total_pix = MASTER_TEXTURE_SIZE * MASTER_TEXTURE_SIZE;
+        let used_pix = MASTER_TEXTURE_SIZE * top + (next_top - top) * left;
+        let percent_pix = (used_pix as f32) / (total_pix as f32) * 100.;
+        println!(
+            "Master Texture Created: {}^2 ({}) px, USED: {}px / {:.2}%",
+            MASTER_TEXTURE_SIZE,
+            total_pix,
+            used_pix,
+            percent_pix
+        );
         self._master_texture.display();
     }
 

@@ -15,7 +15,7 @@ mod physics;
 mod util;
 
 fn main() {
-    let mut core = game::Core::new(800, 600, 400, 300, "Ligeia 0.0.0");
+    let mut core = game::Core::new(800, 600, 400, 300, 1, "Ligeia 0.0.0");
     loop {
         core.update();
         if core.should_close() {
