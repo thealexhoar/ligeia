@@ -1,6 +1,3 @@
 [submodule "rust-sfml"]
 	path = rust-sfml
 	url = https://github.com/thealexhoar/rust-sfml
-[submodule "liquidfun-rust"]
-	path = liquidfun-rust
-	url = https://github.com/thealexhoar/liquidfun-rust
