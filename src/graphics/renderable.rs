@@ -1,6 +1,5 @@
-use sfml::graphics::Vertex;
-
-use util::FloatRect;
+use ligeia_utils::rect::FloatRect;
+use graphics::Vertex;
 
 pub trait Renderable {
     fn radius(&self) -> f32;

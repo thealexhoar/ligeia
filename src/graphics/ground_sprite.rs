@@ -1,7 +1,7 @@
+use ligeia_utils::rect::FloatRect;
 use sfml::graphics::{Vertex};
 
 use graphics::{Renderable};
-use util::FloatRect;
 
 pub struct GroundSprite {
     _radius: f32,

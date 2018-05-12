@@ -1,6 +1,9 @@
 extern crate bit_set;
+extern crate ligeia_softcode;
+extern crate ligeia_utils;
 extern crate liquidfun;
-extern crate num_traits;
+extern crate ncollide2d;
+extern crate nphysics2d;
 extern crate serde;
 #[macro_use]
 extern crate serde_json;

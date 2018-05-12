@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use util::UIntRect;
+use ligeia_utils::rect::UIntRect;
 
 pub struct TextureDef {
     pub filename: String,
     pub frames: Vec<UIntRect>
 }
+

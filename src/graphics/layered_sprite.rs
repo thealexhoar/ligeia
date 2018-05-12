@@ -1,9 +1,10 @@
 use bit_set::BitSet;
+use ligeia_softcode::graphics::LayerDef;
+use ligeia_utils::rect::FloatRect;
 use sfml::graphics::{Vertex};
 use std::collections::HashMap;
 
-use graphics::{LayerDef, Renderable, ShaderHandle, TextureHandle};
-use util::FloatRect;
+use graphics::{Renderable, ShaderHandle, TextureHandle};
 
 #[derive(Clone, Debug)]
 pub struct LayeredSprite {

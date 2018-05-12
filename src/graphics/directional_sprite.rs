@@ -1,8 +1,8 @@
+use ligeia_utils::rect::FloatRect;
 use sfml::graphics::{Vertex};
 
 use graphics::{Renderable};
 use util::consts::{TWO_PI, radians_to_direction8};
-use util::FloatRect;
 
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalSprite {

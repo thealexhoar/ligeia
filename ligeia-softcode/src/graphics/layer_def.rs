@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use util::FloatRect;
+use ligeia_utils::rect::FloatRect;
 
 
 pub struct LayerDef {

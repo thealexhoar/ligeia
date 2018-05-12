@@ -1,3 +1,5 @@
+use ligeia_softcode::graphics::{LayerDef, TextureDef};
+use ligeia_utils::rect::{FloatRect, UIntRect};
 use specs::{Dispatcher, DispatcherBuilder, World};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -10,8 +12,8 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use graphics::{DirectionalSprite, LayerDef, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureDef, TextureHandler, Window};
-use util::{FabricationDef, FloatRect, MasterFabricator, UIntRect};
+use graphics::{DirectionalSprite, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
+use util::{FabricationDef, MasterFabricator};
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -43,41 +45,39 @@ impl<'a> Core<'a> {
             let mut t_h = texture_handler.borrow_mut();
             let texture_defs = vec![
                 TextureDef {
-                    filename: String::from("assets/textures/crate_small.png"),
-                    frames: vec![
-                        UIntRect::new_square(0, 0, 8),
-                        UIntRect::new_square(8, 0, 8),
-                        UIntRect::new_square(16, 0, 8),
-                        UIntRect::new_square(24, 0, 8),
-                    ]
-                },
-                TextureDef {
-                    filename: String::from("assets/textures/barrel_small.png"),
-                    frames: vec![
-                        UIntRect::new_square(0, 0, 8),
-                        UIntRect::new_square(8, 0, 8),
-                        UIntRect::new_square(16, 0, 8),
-                        UIntRect::new_square(24, 0, 8),
-                    ]
-                },
-                TextureDef {
                     filename: String::from("assets/textures/crate.png"),
                     frames: vec![
-                        UIntRect::new_square(0, 0, 16),
-                        UIntRect::new_square(16, 0, 16),
-                        UIntRect::new_square(32, 0, 16),
-                        UIntRect::new_square(48, 0, 16),
-                        UIntRect::new_square(64, 0, 16),
+                        UIntRect::new_square(0, 0, 11),
+                        UIntRect::new_square(11, 0, 11),
+                        UIntRect::new_square(22, 0, 11),
+                        UIntRect::new_square(33, 0, 11),
+                        UIntRect::new_square(44, 0, 11),
                     ]
                 },
                 TextureDef {
-                    filename: String::from("assets/textures/crate2.png"),
+                    filename: String::from("assets/textures/crate_wide.png"),
                     frames: vec![
-                        UIntRect::new(0, 0, 16, 12),
-                        UIntRect::new(16, 0, 16, 12),
-                        UIntRect::new(32, 0, 16, 12),
-                        UIntRect::new(48, 0, 16, 12),
-                        UIntRect::new(64, 0, 16, 12),
+                        UIntRect::new(0, 0, 21, 11),
+                        UIntRect::new(21, 0, 21, 11),
+                        UIntRect::new(42, 0, 21, 11),
+                        UIntRect::new(63, 0, 21, 11),
+                        UIntRect::new(84, 0, 21, 11),
+                    ]
+                },
+                TextureDef {
+                    filename: String::from("assets/textures/barrel.png"),
+                    frames: vec![
+                        UIntRect::new_square(0, 0, 8),
+                        UIntRect::new_square(8, 0, 8),
+                        UIntRect::new_square(16, 0, 8),
+                    ]
+                },
+                TextureDef {
+                    filename: String::from("assets/textures/barrel_metal.png"),
+                    frames: vec![
+                        UIntRect::new_square(0, 0, 8),
+                        UIntRect::new_square(8, 0, 8),
+                        UIntRect::new_square(16, 0, 8),
                     ]
                 },
                 TextureDef {
@@ -104,6 +104,19 @@ impl<'a> Core<'a> {
                         UIntRect::new(80, 0, 16, 18),
                         UIntRect::new(96, 0, 16, 18),
                         UIntRect::new(112, 0, 16, 18),
+                    ]
+                },
+                TextureDef {
+                    filename: String::from("assets/textures/terrence.png"),
+                    frames: vec![
+                        UIntRect::new(0, 0, 9, 12),
+                        UIntRect::new(9, 0, 9, 12),
+                        UIntRect::new(18, 0, 9, 12),
+                        UIntRect::new(27, 0, 9, 12),
+                        UIntRect::new(36, 0, 9, 12),
+                        UIntRect::new(45, 0, 9, 12),
+                        UIntRect::new(54, 0, 9, 12),
+                        UIntRect::new(63, 0, 9, 12),
                     ]
                 },
             ];
@@ -207,73 +220,68 @@ impl<'a> Core<'a> {
         self._master_fabricator.register(WorldPositionFabricator);
         self._master_fabricator.register(WorldRenderableFabricator);
 
-        let mut layer_def = LayerDef { layers: HashMap::new() };
+        let mut crate_layers = LayerDef { layers: HashMap::new() };
+        let mut crate_wide_layers = LayerDef { layers: HashMap::new() };
+        let mut barrel_layers = LayerDef { layers: HashMap::new() };
 
         {
             let texture_handler = self._texture_handler.borrow();
 
-            /*
+
+
             let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/crate.png"));
-            layer_def.layers.insert(0, texture_rects[0]);
-            layer_def.layers.insert(1, texture_rects[0]);
-            layer_def.layers.insert(2, texture_rects[1]);
-            layer_def.layers.insert(3, texture_rects[2]);
-            layer_def.layers.insert(4, texture_rects[2]);
-            layer_def.layers.insert(5, texture_rects[2]);
-            layer_def.layers.insert(6, texture_rects[2]);
-            layer_def.layers.insert(7, texture_rects[2]);
-            layer_def.layers.insert(8, texture_rects[3]);
-            layer_def.layers.insert(9, texture_rects[3]);
-            layer_def.layers.insert(10, texture_rects[4]);
-            */
+            crate_layers.layers.insert(0, texture_rects[0]);
+            crate_layers.layers.insert(1, texture_rects[1]);
+            crate_layers.layers.insert(2, texture_rects[2]);
+            crate_layers.layers.insert(3, texture_rects[2]);
+            crate_layers.layers.insert(4, texture_rects[2]);
+            crate_layers.layers.insert(5, texture_rects[3]);
+            crate_layers.layers.insert(6, texture_rects[4]);
 
-
-            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/crate2.png"));
-            layer_def.layers.insert(0, texture_rects[0]);
-            layer_def.layers.insert(1, texture_rects[1]);
-            layer_def.layers.insert(2, texture_rects[2]);
-            layer_def.layers.insert(3, texture_rects[2]);
-            layer_def.layers.insert(4, texture_rects[2]);
-            layer_def.layers.insert(5, texture_rects[2]);
-            layer_def.layers.insert(6, texture_rects[2]);
-            layer_def.layers.insert(7, texture_rects[3]);
-            layer_def.layers.insert(8, texture_rects[4]);
+            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/crate_wide.png"));
+            crate_wide_layers.layers.insert(0, texture_rects[0]);
+            crate_wide_layers.layers.insert(1, texture_rects[1]);
+            crate_wide_layers.layers.insert(2, texture_rects[2]);
+            crate_wide_layers.layers.insert(3, texture_rects[2]);
+            crate_wide_layers.layers.insert(4, texture_rects[2]);
+            crate_wide_layers.layers.insert(5, texture_rects[3]);
+            crate_wide_layers.layers.insert(6, texture_rects[4]);
 
             /*
-            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/crate_small.png"));
-            layer_def.layers.insert(0, texture_rects[0]);
-            layer_def.layers.insert(1, texture_rects[1]);
-            layer_def.layers.insert(2, texture_rects[1]);
-            layer_def.layers.insert(3, texture_rects[1]);
-            layer_def.layers.insert(4, texture_rects[3]);
-            //layer_def.layers.insert(5, texture_rects[3]);
+            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/barrel.png"));
+            barrel_layers.layers.insert(0, texture_rects[0]);
+            barrel_layers.layers.insert(1, texture_rects[2]);
+            barrel_layers.layers.insert(2, texture_rects[1]);
+            barrel_layers.layers.insert(3, texture_rects[2]);
+            barrel_layers.layers.insert(4, texture_rects[3]);
             */
 
-            /*
-            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/barrel_small.png"));
-            layer_def.layers.insert(0, texture_rects[0]);
-            layer_def.layers.insert(1, texture_rects[2]);
-            layer_def.layers.insert(2, texture_rects[1]);
-            layer_def.layers.insert(3, texture_rects[2]);
-            layer_def.layers.insert(4, texture_rects[3]);
-            */
+            let texture_rects = texture_handler.deref().get_subrects(String::from("assets/textures/barrel_metal.png"));
+            barrel_layers.layers.insert(0, texture_rects[0]);
+            barrel_layers.layers.insert(1, texture_rects[0]);
+            barrel_layers.layers.insert(2, texture_rects[1]);
+            barrel_layers.layers.insert(3, texture_rects[0]);
+            barrel_layers.layers.insert(4, texture_rects[0]);
+            barrel_layers.layers.insert(5, texture_rects[1]);
+            barrel_layers.layers.insert(6, texture_rects[0]);
+            barrel_layers.layers.insert(7, texture_rects[0]);
+            barrel_layers.layers.insert(8, texture_rects[2]);
 
         }
 
-        //let renderable = Arc::new(LayeredSprite::new(0., 0., 8., 8., &layer_def)) as Arc<Renderable + Sync + Send>;
-        //let renderable = Arc::new(LayeredSprite::new(0., 0., 16., 16., &layer_def)) as Arc<Renderable + Sync + Send>;
-        let renderable = Arc::new(LayeredSprite::new(0., 0., 16., 12., &layer_def)) as Arc<Renderable + Sync + Send>;
+        let crate_renderable = Arc::new(LayeredSprite::new(0., 0., 11., 11., &crate_layers)) as Arc<Renderable + Sync + Send>; //crate
+        let crate_wide_renderable = Arc::new(LayeredSprite::new(0., 0., 21., 11., &crate_wide_layers)) as Arc<Renderable + Sync + Send>; //crate_wide
+        let barrel_renderable = Arc::new(LayeredSprite::new(0., 0., 8., 8., &barrel_layers)) as Arc<Renderable + Sync + Send>; // barrel
 
         let direction_rects = {
             let texture_handler = self._texture_handler.borrow();
-            (*texture_handler.deref().get_subrects(String::from("assets/textures/pedro.png"))).clone()
+            (*texture_handler.deref().get_subrects(String::from("assets/textures/terrence.png"))).clone()
         };
-        //let renderable2 = Arc::new(Sprite::new(0., 8., 16., 16., &gordy_rects[0]));
-        //let renderable2 = Arc::new(DirectionalSprite::new(0., 8., 16., 16., &(gordy_rects)[0..8]));
-        let renderable2 = Arc::new(DirectionalSprite::new(0., 9., 16., 18., &(direction_rects)[0..8]));
+        let player_renderable = Arc::new(DirectionalSprite::new(0., 6., 9., 12., &(direction_rects)[0..8])); //terrence
 
         //test code
         let sq = 5;
+        let mut iter = 0;
         for i in (-sq / 2)..sq / 2 {
             for j in (-sq / 2)..sq / 2 {
                 if i != -sq / 2 && i != sq / 2 - 1 && j != -sq / 2 && j != sq / 2 - 1 {
@@ -282,14 +290,22 @@ impl<'a> Core<'a> {
                 let mut test_f_def = FabricationDef::new();
                 test_f_def.add_component(WorldPosition::new(20. * i as f32, 20. * j as f32, (i as f32 * 11.7) + (j as f32 * 3.9)));
                 test_f_def.add_component(ScreenPosition::new());
-                test_f_def.add_component(WorldRenderable::new(renderable.clone()));
+
+                match iter % 3 {
+                    0 => test_f_def.add_component(WorldRenderable::new(crate_renderable.clone())),
+                    1 => test_f_def.add_component(WorldRenderable::new(barrel_renderable.clone())),
+                    _ => test_f_def.add_component(WorldRenderable::new(crate_wide_renderable.clone()))
+                };
                 self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+
+
+                iter += 1;
             }
         }
         let mut gordy_def = FabricationDef::new();
         gordy_def.add_component(WorldPosition::new(0., 0., 0.));
         gordy_def.add_component(ScreenPosition::new());
-        gordy_def.add_component(WorldRenderable::new(renderable2.clone()));
+        gordy_def.add_component(WorldRenderable::new(player_renderable.clone()));
         self._world.write_resource::<EntitiesToAdd>().push(gordy_def);
     }
 

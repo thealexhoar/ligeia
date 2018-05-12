@@ -1,10 +1,11 @@
+use ligeia_softcode::graphics::TextureDef;
+use ligeia_utils::rect::{FloatRect, UIntRect};
 use sfml::graphics::{BlendMode, Color, blend_mode::Factor, PrimitiveType, RenderStates, RenderTarget, RenderTexture, Texture, Vertex, View};
 use sfml::system::{SfBox, Vector2f};
 use std::collections::HashMap;
 use std::ops::Deref;
 
-use graphics::{BASIC_VERTS, ShaderHandler, TextureDef};
-use util::{FloatRect, UIntRect};
+use graphics::{BASIC_VERTS, ShaderHandler};
 
 pub type TextureHandle = u32;
 

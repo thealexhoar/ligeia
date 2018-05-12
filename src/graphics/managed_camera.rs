@@ -1,4 +1,4 @@
-use util::FloatRect;
+use ligeia_utils::rect::FloatRect;
 
 pub struct ManagedCamera {
     pub x: f32,
