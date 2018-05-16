@@ -1,3 +1,0 @@
-/home/alex/Projects/ligeia/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/alex/Projects/ligeia/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/alex/Projects/ligeia/cmake-build-debug/CMakeFiles/ligeia.dir
