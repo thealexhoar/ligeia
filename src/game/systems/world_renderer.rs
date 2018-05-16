@@ -1,7 +1,7 @@
-use sfml::graphics::{RenderStates, Transformable, Vertex};
+use sfml::graphics::{PrimitiveType, RenderStates, Transformable, Vertex};
 use sfml::graphics::Sprite as SFSprite;
 use sfml::system::Vector2f;
-use specs::{Fetch, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -33,10 +33,10 @@ impl<'a> WorldRenderer<'a> {
 }
 
 impl<'a, 'b> System<'a> for WorldRenderer<'b> {
-    type SystemData = (Fetch<'a, VerticesNeeded>, ReadStorage<'a, ScreenPosition>, ReadStorage<'a, WorldRenderable>);
+    type SystemData = (ReadExpect<'a, VerticesNeeded>, ReadStorage<'a, ScreenPosition>, ReadStorage<'a, WorldRenderable>);
 
     fn run(&mut self, (vertices_needed, screen_pos, world_renderable): Self::SystemData) {
-        let vertices_needed = *vertices_needed.deref();
+        let vertices_needed = (*vertices_needed.deref()).world;
         if  vertices_needed >= self._vertices.len() {
             self._vertices.resize(vertices_needed, Vertex::default())
         }
@@ -70,6 +70,6 @@ impl<'a, 'b> System<'a> for WorldRenderer<'b> {
         let mut window = self._window.borrow_mut();
         //let screen_verts = sprite.get_world_vertices(screen_pos.x, screen_pos.y, screen_pos.theta);
 
-        window.draw_vertices(&self._vertices[0..vertices_needed], render_states);
+        window.draw_vertices(&self._vertices[0..vertices_needed], PrimitiveType::Quads, render_states);
     }
 }

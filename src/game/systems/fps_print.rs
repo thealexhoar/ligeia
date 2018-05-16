@@ -1,4 +1,4 @@
-use specs::{Fetch, System};
+use specs::{ReadExpect, System};
 
 use game::resources::DeltaTime;
 
@@ -19,14 +19,14 @@ impl FPSPrint {
 }
 
 impl<'a> System<'a> for FPSPrint {
-    type SystemData = Fetch<'a, DeltaTime>;
+    type SystemData = ReadExpect<'a, DeltaTime>;
 
     fn run(&mut self, dt: Self::SystemData) {
         if self._past_times.len() < self._history {
-            self._past_times.push(dt.clone());
+            self._past_times.push(dt.dt);
         }
         else {
-            self._past_times[self._counter] = dt.clone();
+            self._past_times[self._counter] = dt.dt;
             self._counter += 1;
             if self._counter == self._history {
                 self._counter = 0;

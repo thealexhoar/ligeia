@@ -8,6 +8,7 @@ pub trait Fabricator {
     fn build_onto<'a>(&self, data: Box<Any>, entity_builder: EntityBuilder<'a>) -> EntityBuilder<'a>;
 }
 
+#[derive(Clone)]
 pub struct FabricationDef {
     _component_defs: HashMap<TypeId, Arc<Box<Any + Send + Sync + 'static>>>
 }

@@ -1,4 +1,4 @@
-use specs::{Fetch, System};
+use specs::{ReadExpect, System};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -30,7 +30,7 @@ impl<'a> ShadowRenderer<'a> {
 
 
 impl<'a, 'b> System<'a> for ShadowRenderer<'b> {
-    type SystemData = (Fetch<'a, ScreenPosition>);
+    type SystemData = (ReadExpect<'a, ScreenPosition>);
 
     fn run(&mut self, data: Self::SystemData) {
         

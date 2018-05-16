@@ -13,6 +13,7 @@ use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
 use graphics::{DirectionalSprite, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
+use physics::{construct_world, PhysicsWorld};
 use util::{FabricationDef, MasterFabricator};
 
 pub struct Core<'a> {
@@ -22,6 +23,7 @@ pub struct Core<'a> {
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _window: Rc<RefCell<Window>>,
     _world: World,
+    _physics_world: Rc<RefCell<PhysicsWorld>>,
     _master_fabricator: MasterFabricator
 }
 
@@ -30,6 +32,7 @@ impl<'a> Core<'a> {
         let shader_handler = Rc::new(RefCell::new(ShaderHandler::new()));
         let texture_handler = Rc::new(RefCell::new(TextureHandler::new()));
         let window = Rc::new(RefCell::new(Window::new(width, height, internal_width, internal_height, pixel_factor, title)));
+        let physics_world = construct_world();
 
         let mut core = Self {
             _current_scene: 0,
@@ -38,6 +41,7 @@ impl<'a> Core<'a> {
             _texture_handler: Rc::clone(&texture_handler),
             _window: Rc::clone(&window),
             _world: World::new(),
+            _physics_world: Rc::clone(&physics_world),
             _master_fabricator: MasterFabricator::new()
         };
 
@@ -127,11 +131,11 @@ impl<'a> Core<'a> {
 
         let dispatcher_builder = DispatcherBuilder::new();
         let dispatcher = dispatcher_builder.build();
-        let null_scene = Scene::new(
+        let null_scene = Scene::new_single(
             Box::new(dispatcher),
             Some(|world: &mut World| {
                 println!("Loaded null scene!");
-                *(world.write_resource::<NextScene>().deref_mut()) = Some(2);
+                (*world.write_resource::<NextScene>().deref_mut()).id = Some(2)
             }),
             Some(|world: &mut World| { println!("Unloaded null scene!") })
         );
@@ -142,7 +146,8 @@ impl<'a> Core<'a> {
             testbed(
                 Rc::clone(&shader_handler),
                 Rc::clone(&texture_handler),
-                Rc::clone(&window)
+                Rc::clone(&window),
+                Rc::clone(&physics_world)
             )
         );
 
@@ -160,7 +165,7 @@ impl<'a> Core<'a> {
             scene.unload(&mut self._world);
         }
         self._current_scene = next_scene_id;
-        *(self._world.write_resource::<NextScene>().deref_mut()) = None;
+        (*self._world.write_resource::<NextScene>().deref_mut()).id = None;
         self._scenes[&self._current_scene].load(&mut self._world);
 
         true
@@ -186,11 +191,11 @@ impl<'a> Core<'a> {
             //and snag delta_time while we have a borrow on window
             window.delta_time()
         };
-        *(self._world.write_resource::<DeltaTime>().deref_mut()) = dt;
+        (*self._world.write_resource::<DeltaTime>().deref_mut()).dt = dt;
 
 
         let next_scene = self._world.read_resource::<NextScene>().deref().clone();
-        if let Some(next_scene_id) = next_scene {
+        if let Some(next_scene_id) = next_scene.id {
             self.try_change_scene(next_scene_id);
         }
 
@@ -209,12 +214,14 @@ impl<'a> Core<'a> {
         self._world.register::<WorldRenderable>();
         self._world.register::<WorldPosition>();
 
-        self._world.add_resource(0. as DeltaTime);
+
+        self._world.add_resource(DeltaTime::new());
         self._world.add_resource(EntitiesToAdd::new());
         self._world.add_resource(EntitiesToKill::new());
         self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
-        self._world.add_resource(Some(1 as usize) as NextScene);
-        self._world.add_resource(0 as VerticesNeeded);
+        self._world.add_resource(NextScene::with_id(1));
+        self._world.add_resource(PhysicsTimeAccumulator::new());
+        self._world.add_resource(VerticesNeeded::new());
 
         self._master_fabricator.register(ScreenPositionFabricator);
         self._master_fabricator.register(WorldPositionFabricator);
@@ -279,12 +286,18 @@ impl<'a> Core<'a> {
         };
         let player_renderable = Arc::new(DirectionalSprite::new(0., 6., 9., 12., &(direction_rects)[0..8])); //terrence
 
-        //test code
-        let sq = 5;
+        ///////////////////////////////////////////////////////////
+        // ##### ##### ##### #####       ##### ##### ####  ##### //
+        //   #   #     #       #         #     #   # #   # #     //
+        //   #   ##### #####   #         #     #   # #   # ##### //
+        //   #   #         #   #         #     #   # #   # #     //
+        //   #   ##### #####   #         ##### ##### ####  ##### //
+        ///////////////////////////////////////////////////////////
+        let sq = 85;
         let mut iter = 0;
         for i in (-sq / 2)..sq / 2 {
             for j in (-sq / 2)..sq / 2 {
-                if i != -sq / 2 && i != sq / 2 - 1 && j != -sq / 2 && j != sq / 2 - 1 {
+                if !(i >= 2 || j >= 2 || i <= -2 || j <=-2) {
                     continue;
                 }
                 let mut test_f_def = FabricationDef::new();
@@ -296,27 +309,27 @@ impl<'a> Core<'a> {
                     1 => test_f_def.add_component(WorldRenderable::new(barrel_renderable.clone())),
                     _ => test_f_def.add_component(WorldRenderable::new(crate_wide_renderable.clone()))
                 };
-                self._world.write_resource::<EntitiesToAdd>().push(test_f_def);
+                self._world.write_resource::<EntitiesToAdd>().entities.push(test_f_def);
 
 
                 iter += 1;
             }
         }
-        let mut gordy_def = FabricationDef::new();
-        gordy_def.add_component(WorldPosition::new(0., 0., 0.));
-        gordy_def.add_component(ScreenPosition::new());
-        gordy_def.add_component(WorldRenderable::new(player_renderable.clone()));
-        self._world.write_resource::<EntitiesToAdd>().push(gordy_def);
+        let mut player_def = FabricationDef::new();
+        player_def.add_component(WorldPosition::new(0., 0., 0.));
+        player_def.add_component(ScreenPosition::new());
+        player_def.add_component(WorldRenderable::new(player_renderable.clone()));
+        self._world.write_resource::<EntitiesToAdd>().entities.push(player_def);
     }
 
     fn update_entities(&mut self) {
-        while self._world.read_resource::<EntitiesToAdd>().len() > 0 {
-            let f_def = self._world.write_resource::<EntitiesToAdd>().pop().unwrap();
+        while self._world.read_resource::<EntitiesToAdd>().entities.len() > 0 {
+            let f_def = self._world.write_resource::<EntitiesToAdd>().entities.pop().unwrap();
             self._master_fabricator.build(f_def, &mut self._world);
         }
 
-        while self._world.read_resource::<EntitiesToKill>().len() > 0 {
-            let entity = self._world.write_resource::<EntitiesToKill>().pop().unwrap();
+        while self._world.read_resource::<EntitiesToKill>().entities.len() > 0 {
+            let entity = self._world.write_resource::<EntitiesToKill>().entities.pop().unwrap();
             self._world.delete_entity(entity);
         }
 

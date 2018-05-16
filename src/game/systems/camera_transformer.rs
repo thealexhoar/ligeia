@@ -1,4 +1,4 @@
-use specs::{Fetch, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadStorage, ReadExpect, System, WriteStorage};
 
 use game::components::{ScreenPosition, WorldPosition};
 use graphics::ManagedCamera;
@@ -6,7 +6,7 @@ use graphics::ManagedCamera;
 pub struct CameraTransformer;
 
 impl<'a> System<'a> for CameraTransformer {
-    type SystemData = (Fetch<'a, ManagedCamera>, ReadStorage<'a, WorldPosition>, WriteStorage<'a, ScreenPosition>);
+    type SystemData = (ReadExpect<'a, ManagedCamera>, ReadStorage<'a, WorldPosition>, WriteStorage<'a, ScreenPosition>);
 
     fn run(&mut self, (camera, world_pos, mut screen_pos): Self::SystemData) {
         for (world_pos, screen_pos) in (&world_pos, &mut screen_pos).join() {

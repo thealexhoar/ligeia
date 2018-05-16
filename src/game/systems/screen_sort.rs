@@ -1,5 +1,4 @@
-use specs::{Entities, Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
-use std::collections::LinkedList;
+use specs::{Entities, Join, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
 use std::ops::{Deref, DerefMut};
 
 use game::components::{ScreenPosition, WorldRenderable};
@@ -11,8 +10,8 @@ pub struct ScreenSort;
 impl<'a> System<'a> for ScreenSort {
     type SystemData = (
         Entities<'a>,
-        Fetch<'a, ManagedCamera>,
-        FetchMut<'a, VerticesNeeded>,
+        ReadExpect<'a, ManagedCamera>,
+        WriteExpect<'a, VerticesNeeded>,
         ReadStorage<'a, WorldRenderable>,
         WriteStorage<'a, ScreenPosition>
     );
@@ -37,7 +36,7 @@ impl<'a> System<'a> for ScreenSort {
             sp.vertex_index = Some(vert_sum);
             vert_sum += verts;
         }
-        *vertices_needed.deref_mut() = vert_sum;
+        (*vertices_needed.deref_mut()).world = vert_sum;
     }
 }
 

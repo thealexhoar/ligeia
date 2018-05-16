@@ -26,8 +26,6 @@ impl Window {
             internal_height * pixel_factor,
             false
         ).unwrap();
-        //let mut target_texture = RenderTexture::new(internal_width * 2, internal_height * 2, false).unwrap();
-        //let mut target_texture = RenderTexture::new(width, height, false).unwrap();
         target_texture.set_view(&target_view);
 
         let mut window = RenderWindow::new(mode, title, style, &settings);
@@ -35,11 +33,9 @@ impl Window {
 
         let window_view = View::new(Vector2f{x: 0.5, y: 0.5}, Vector2f {x: 1., y: -1.});
         window.set_view(&window_view);
-        //window.set_view(&target_view);
 
 
         Self {
-            //_clear_color: Color::rgb(220, 111, 180),
             _clear_color: Color::rgb(150, 111, 140),
             _should_close: false,
             _clock: Clock::start(),
@@ -50,20 +46,12 @@ impl Window {
     }
 
     pub fn clear(&mut self) {
-        //self._clear_color.r += 1;
-        //self._clear_color.r %= 255;
         self._target_texture.clear(&self._clear_color);
         self._window.clear(&Color::BLACK);
     }
 
-    pub fn draw_vertex_array<'a>(&mut self, vertices: &VertexArray, states: RenderStates<'a, 'a, 'a>) {
-        self._target_texture.draw_vertex_array(vertices, states);
-        //self._window.draw_vertex_array(vertices, states);
-    }
-
-    pub fn draw_vertices<'a>(&mut self, vertices: &[Vertex], states: RenderStates<'a, 'a, 'a>) {
-        self._target_texture.draw_primitives(vertices, PrimitiveType::Quads, states);
-        //self._window.draw_primitives(vertices, PrimitiveType::Quads, states);
+    pub fn draw_vertices<'a>(&mut self, vertices: &[Vertex], primitive_type: PrimitiveType, states: RenderStates<'a, 'a, 'a>) {
+        self._target_texture.draw_primitives(vertices, primitive_type, states);
     }
 
     pub fn delta_time(&self) -> f32{
