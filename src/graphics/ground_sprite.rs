@@ -4,7 +4,7 @@ use sfml::graphics::{Vertex};
 use graphics::{Renderable};
 
 pub struct GroundSprite {
-    _radius: f32,
+    _radius_2: f32,
     _rect: FloatRect,
     _vertices: [Vertex; 4]
 }
@@ -14,7 +14,7 @@ impl GroundSprite {
     pub fn new(origin_x: f32, origin_y: f32, width: f32, height: f32, tex_rect: &FloatRect) -> Self {
         let radius = ((width * width + height * height) as f32 * 0.25).sqrt();
         let mut sprite = Self {
-            _radius: radius,
+            _radius_2: radius * radius,
             _rect: FloatRect::new_square(origin_x - radius, origin_y - radius, radius * 2.),
             _vertices: [Vertex::default(); 4]
         };
@@ -59,7 +59,7 @@ impl GroundSprite {
 
 
 impl Renderable for GroundSprite {
-    fn radius(&self) -> f32 { self._radius }
+    fn radius_2(&self) -> f32 { self._radius_2 }
 
     fn rect(&self) -> &FloatRect { &self._rect }
 

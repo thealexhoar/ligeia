@@ -9,7 +9,7 @@ use graphics::{Renderable, ShaderHandle, TextureHandle};
 #[derive(Clone, Debug)]
 pub struct LayeredSprite {
     _base_vertices: [(f32, f32); 4],
-    _radius: f32,
+    _radius_2: f32,
     _rect: FloatRect,
     _tex_coords: HashMap<usize, FloatRect>,
     _layer_bits: BitSet,
@@ -41,7 +41,7 @@ impl LayeredSprite {
 
         let mut layered_sprite = Self {
             _base_vertices: [(0., 0.); 4],
-            _radius: radius,
+            _radius_2: radius * radius,
             _rect: FloatRect::new(origin_x - radius, origin_y - radius - (top_layer as f32), radius * 2., radius * 2. + top_layer as f32),
             _tex_coords: tex_coords,
             _layer_bits: layer_bits,
@@ -73,7 +73,7 @@ impl LayeredSprite {
 
 
 impl Renderable for LayeredSprite {
-    fn radius(&self) -> f32 { self._radius }
+    fn radius_2(&self) -> f32 { self._radius_2 }
 
     fn rect(&self) -> &FloatRect { &self._rect }
 

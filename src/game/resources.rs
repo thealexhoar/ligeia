@@ -81,4 +81,16 @@ impl VerticesNeeded {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct EntityCount {
+    pub count: usize
+}
+
+impl EntityCount {
+    pub fn new() -> Self {
+        Self {
+            count: 0
+        }
+    }
+}
 

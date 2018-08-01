@@ -6,7 +6,7 @@ use util::consts::{TWO_PI, radians_to_direction8};
 
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalSprite {
-    _radius: f32,
+    _radius_2: f32,
     _rect: FloatRect,
     _vertices: [(f32, f32); 4],
     _tex_rects: [FloatRect; 8]
@@ -27,7 +27,7 @@ impl DirectionalSprite {
             rects[i] = tex_rects[i];
         }
         let mut sprite = Self {
-            _radius: radius,
+            _radius_2: radius * radius,
             _rect: FloatRect::new_square(origin_x - radius, origin_y - radius, radius * 2.),
             _vertices: [(0., 0.); 4],
             _tex_rects: rects
@@ -63,7 +63,7 @@ impl DirectionalSprite {
 }
 
 impl Renderable for DirectionalSprite {
-    fn radius(&self) -> f32 { self._radius }
+    fn radius_2(&self) -> f32 { self._radius_2 }
 
     fn rect(&self) -> &FloatRect { &self._rect }
 

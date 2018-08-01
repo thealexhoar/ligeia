@@ -28,7 +28,7 @@ impl<T: Copy + Num + PartialOrd> Rect<T> {
         self.top + self.height > other.top
     }
 
-    pub fn intersects_at(&self, x: T, y: T, other: &Rect<T>) -> bool {
+    pub fn intersects_rect(&self, x: T, y: T, other: &Rect<T>) -> bool {
         self.left < other.left + other.width + x &&
         self.left + self.width > other.left + x &&
         self.top < other.top + other.height + y &&

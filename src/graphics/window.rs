@@ -29,7 +29,7 @@ impl Window {
         target_texture.set_view(&target_view);
 
         let mut window = RenderWindow::new(mode, title, style, &settings);
-        window.set_vertical_sync_enabled(true);
+        //window.set_vertical_sync_enabled(true);
 
         let window_view = View::new(Vector2f{x: 0.5, y: 0.5}, Vector2f {x: 1., y: -1.});
         window.set_view(&window_view);

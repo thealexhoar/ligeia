@@ -202,7 +202,7 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 0.02;
+        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.6 * dt;
     }
 
     pub fn should_close(&self) -> bool {
@@ -218,6 +218,7 @@ impl<'a> Core<'a> {
         self._world.add_resource(DeltaTime::new());
         self._world.add_resource(EntitiesToAdd::new());
         self._world.add_resource(EntitiesToKill::new());
+        self._world.add_resource(EntityCount::new());
         self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(NextScene::with_id(1));
         self._world.add_resource(PhysicsTimeAccumulator::new());
@@ -323,15 +324,20 @@ impl<'a> Core<'a> {
     }
 
     fn update_entities(&mut self) {
+        let mut entity_count = self._world.read_resource::<EntityCount>().count;
         while self._world.read_resource::<EntitiesToAdd>().entities.len() > 0 {
             let f_def = self._world.write_resource::<EntitiesToAdd>().entities.pop().unwrap();
             self._master_fabricator.build(f_def, &mut self._world);
+            entity_count += 1;
         }
 
         while self._world.read_resource::<EntitiesToKill>().entities.len() > 0 {
             let entity = self._world.write_resource::<EntitiesToKill>().entities.pop().unwrap();
             self._world.delete_entity(entity);
+            entity_count -= 1;
         }
+
+        self._world.write_resource::<EntityCount>().count = entity_count;
 
         self._world.maintain();
     }

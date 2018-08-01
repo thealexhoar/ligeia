@@ -6,16 +6,14 @@ pub struct ManagedCamera {
     pub theta: f32,
     _width: f32,
     _height: f32,
-    _broadphase: FloatRect,
-    _radius: f32,
+    _rect: FloatRect,
+    _radius_2: f32,
 }
 
 impl ManagedCamera {
     pub fn new(x: f32, y: f32, theta: f32, width: f32, height: f32) -> Self {
         let radius = ((width * width + height * height) as f32 * 0.25).sqrt();
 
-        let fuzz = 0.;
-        let h_fuzz = 0.5 * fuzz;
 
         Self {
             x,
@@ -23,8 +21,8 @@ impl ManagedCamera {
             theta,
             _width: width,
             _height: height,
-            _broadphase: FloatRect::new(-width * 0.5 - h_fuzz, -height * 0.5 - h_fuzz, width + fuzz, height + fuzz),
-            _radius: radius + fuzz
+            _rect: FloatRect::new(-width * 0.5, -height * 0.5, width, height),
+            _radius_2: radius * radius
         }
     }
 
@@ -43,7 +41,15 @@ impl ManagedCamera {
         self.theta - theta
     }
 
-    pub fn overlaps_with(&self, x: f32, y: f32, rect: &FloatRect) -> bool {
-        self._broadphase.intersects_at(x, y, rect)
+    pub fn overlaps_with(&self, x: f32, y: f32, radius_2: f32, rect: &FloatRect) -> bool {
+        let dx = self.x - x;
+        let dy = self.y - y;
+        let d2 = dx * dx + dy * dy;
+        if d2 <= self._radius_2 + radius_2 {
+            self._rect.intersects_rect(x, y, rect)
+        }
+        else {
+            false
+        }
     }
 }

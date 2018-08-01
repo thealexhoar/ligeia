@@ -52,7 +52,6 @@ impl<'a, 'b> System<'a> for WorldRenderer<'b> {
                     &mut self._vertices[target_index..target_index+v]
                 );
             }
-
         }
 
         let texture_handler = self._texture_handler.borrow();
