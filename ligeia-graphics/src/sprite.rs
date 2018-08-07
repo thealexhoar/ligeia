@@ -1,7 +1,6 @@
 use ligeia_utils::rect::FloatRect;
-use sfml::graphics::{Vertex};
 
-use graphics::{Renderable};
+use {Renderable, Vertex};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Sprite {
@@ -57,31 +56,18 @@ impl Sprite {
         let h_width = width * 0.5;
         let h_height = height * 0.5;
 
-        self._vertices[0].position.x = -h_width - origin_x;
-        self._vertices[0].position.y = -h_height - origin_y;
+        self._vertices[0].set_position_xy(-h_width - origin_x, -h_height - origin_y);
+        self._vertices[1].set_position_xy(h_width - origin_x, -h_height - origin_y);
+        self._vertices[2].set_position_xy(h_width - origin_x, h_height - origin_y);
+        self._vertices[3].set_position_xy(-h_width - origin_x, h_height - origin_y);
 
-        self._vertices[1].position.x = h_width - origin_x;
-        self._vertices[1].position.y = -h_height - origin_y;
-
-        self._vertices[2].position.x = h_width - origin_x;
-        self._vertices[2].position.y = h_height - origin_y;
-
-        self._vertices[3].position.x = -h_width - origin_x;
-        self._vertices[3].position.y = h_height - origin_y;
     }
 
     pub fn set_tex_rect(&mut self, rect: &FloatRect) {
-        self._vertices[0].tex_coords.x = rect.left;
-        self._vertices[0].tex_coords.y = rect.top;
-
-        self._vertices[1].tex_coords.x = rect.left + rect.width;
-        self._vertices[1].tex_coords.y = rect.top;
-
-        self._vertices[2].tex_coords.x = rect.left + rect.width;
-        self._vertices[2].tex_coords.y = rect.top + rect.height;
-
-        self._vertices[3].tex_coords.x = rect.left;
-        self._vertices[3].tex_coords.y = rect.top + rect.height;
+        self._vertices[0].set_tex_coords_uv(rect.left, rect.top);
+        self._vertices[1].set_tex_coords_uv(rect.left + rect.width, rect.top);
+        self._vertices[2].set_tex_coords_uv(rect.left + rect.width, rect.top + rect.height);
+        self._vertices[3].set_tex_coords_uv(rect.left, rect.top + rect.height);
     }
 }
 
@@ -94,11 +80,14 @@ impl Renderable for Sprite {
 
     fn write_to_vertices(&self, x: f32, y: f32, theta: f32, camera_theta: f32, target: &mut [Vertex]) {
         for i in 0..4 {
-            let local_x = self._vertices[i].position.x;
-            let old_y = self._vertices[i].position.y;
-            target[i].position.x = (local_x * theta.cos() - old_y * theta.sin()) + x;
-            target[i].position.y = (local_x * theta.sin() + old_y * theta.cos()) + y;
-            target[i].tex_coords = self._vertices[i].tex_coords;
+            let local_x = self._vertices[i].position_x();
+            let old_y = self._vertices[i].position_y();
+            target[i].set_position_xy(
+                (local_x * theta.cos() - old_y * theta.sin()) + x,
+                (local_x * theta.sin() + old_y * theta.cos()) + y
+            );
+            let tex_coords = self._vertices[i].tex_coords();
+            target[i].set_tex_coords(&tex_coords);
         }
     }
 

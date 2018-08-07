@@ -4,18 +4,18 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use game::components::ScreenPosition;
-use graphics::{ShaderHandler, TextureHandler, Vertex, Window};
+use ligeia_graphics::{ShaderHandler, TextureHandler, Vertex, Window};
 
-pub struct ShadowRenderer<'a> {
-    _shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+pub struct ShadowRenderer{
+    _shader_handler: Rc<RefCell<ShaderHandler>>,
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _vertices: Vec<Vertex>,
     _window: Rc<RefCell<Window>>
 }
 
-impl<'a> ShadowRenderer<'a> {
+impl ShadowRenderer {
     pub fn new(
-        shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+        shader_handler: Rc<RefCell<ShaderHandler>>,
         texture_handler: Rc<RefCell<TextureHandler>>,
         window: Rc<RefCell<Window>>
     ) -> Self {
@@ -29,7 +29,7 @@ impl<'a> ShadowRenderer<'a> {
 }
 
 
-impl<'a, 'b> System<'a> for ShadowRenderer<'b> {
+impl<'a> System<'a> for ShadowRenderer {
     type SystemData = (ReadExpect<'a, ScreenPosition>);
 
     fn run(&mut self, data: Self::SystemData) {

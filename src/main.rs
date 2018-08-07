@@ -1,4 +1,4 @@
-extern crate bit_set;
+extern crate ligeia_graphics;
 extern crate ligeia_softcode;
 extern crate ligeia_utils;
 extern crate nalgebra as na;
@@ -13,7 +13,6 @@ extern crate specs;
 extern crate specs_derive;
 
 mod game;
-mod graphics;
 mod physics;
 mod util;
 

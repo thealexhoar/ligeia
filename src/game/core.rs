@@ -12,14 +12,14 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use graphics::{DirectionalSprite, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
+use ligeia_graphics::{DirectionalSprite, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
 use physics::{construct_world, PhysicsWorld};
 use util::{FabricationDef, MasterFabricator};
 
 pub struct Core<'a> {
     _current_scene: SceneID,
     _scenes: HashMap<SceneID, Scene<'a>>,
-    _shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+    _shader_handler: Rc<RefCell<ShaderHandler>>,
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _window: Rc<RefCell<Window>>,
     _world: World,

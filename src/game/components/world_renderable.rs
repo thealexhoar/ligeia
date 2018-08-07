@@ -3,7 +3,7 @@ use std::any::{Any, TypeId};
 use std::ops::Deref;
 use std::sync::Arc;
 
-use graphics::Renderable;
+use ligeia_graphics::Renderable;
 use util::Fabricator;
 
 #[derive(Clone, Component)]

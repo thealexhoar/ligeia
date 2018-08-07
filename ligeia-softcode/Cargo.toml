@@ -5,5 +5,3 @@ authors = ["Alex Hoar <thealexhoar@gmail.com>"]
 
 [dependencies]
 ligeia-utils = { path = "../ligeia-utils"}
-serde = "1.0.37"
-serde_json = "1.0.13"

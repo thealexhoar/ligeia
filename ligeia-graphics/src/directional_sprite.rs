@@ -1,8 +1,11 @@
-use ligeia_utils::rect::FloatRect;
-use sfml::graphics::{Vertex};
+use ligeia_utils::{
+    rect::FloatRect,
+    TWO_PI,
+    radians_to_direction8
+};
 
-use graphics::{Renderable};
-use util::consts::{TWO_PI, radians_to_direction8};
+
+use {Renderable, Vertex};
 
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalSprite {
@@ -18,6 +21,7 @@ Vertices in a sprite go clockwise as such:
     | |
     3-2
 */
+
 
 impl DirectionalSprite {
     pub fn new(origin_x: f32, origin_y: f32, width: f32, height: f32, tex_rects: &[FloatRect]) -> Self {
@@ -42,9 +46,9 @@ impl DirectionalSprite {
         if centered {
             self.set_local_vertices(0., 0., width, height);
         }
-            else {
-                self.set_local_vertices(width * 0.5, height * 0.5, width, height);
-            }
+        else {
+            self.set_local_vertices(width * 0.5, height * 0.5, width, height);
+        }
     }
 
     pub fn set_local_vertices(&mut self, origin_x: f32, origin_y: f32, width: f32, height: f32) {
@@ -75,16 +79,18 @@ impl Renderable for DirectionalSprite {
         let tex_coords = &self._tex_rects[direction as usize];
         for i in 0..4 {
             let (local_x, local_y) = self._vertices[i];
-            target[i].position.x = (local_x * theta.cos() - local_y * theta.sin()) + x;
-            target[i].position.y = (local_x * theta.sin() + local_y * theta.cos()) + y;
-            target[i].tex_coords.x = match i {
+            target[i].set_position_x((local_x * theta.cos() - local_y * theta.sin()) + x);
+            target[i].set_position_y((local_x * theta.sin() + local_y * theta.cos()) + y);
+            target[i].set_tex_coords_uv(
+                match i {
                 0 | 3 => tex_coords.left,
                 _     => tex_coords.left + tex_coords.width
-            };
-            target[i].tex_coords.y = match i {
-                0 | 1 => tex_coords.top,
-                _     => tex_coords.top + tex_coords.height
-            };
+                },
+                match i {
+                    0 | 1 => tex_coords.top,
+                    _     => tex_coords.top + tex_coords.height
+                }
+            );
         }
     }
 

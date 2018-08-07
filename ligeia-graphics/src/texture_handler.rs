@@ -1,11 +1,11 @@
 use ligeia_softcode::graphics::TextureDef;
 use ligeia_utils::rect::{FloatRect, UIntRect};
-use sfml::graphics::{BlendMode, Color, blend_mode::Factor, PrimitiveType, RenderStates, RenderTarget, RenderTexture, Texture, Vertex, View};
-use sfml::system::{SfBox, Vector2f};
+
 use std::collections::HashMap;
 use std::ops::Deref;
 
-use graphics::{BASIC_VERTS, ShaderHandler};
+//TODO: refactor to not use sfml
+use {BASIC_VERTS, Color, ShaderHandler, Texture, Vector2f};
 
 pub type TextureHandle = u32;
 
@@ -15,8 +15,8 @@ static CLEAR_COLOR: Color = Color::TRANSPARENT;
 
 pub struct TextureHandler {
     _handle_gen: TextureHandle,
-    _master_texture: RenderTexture,
-    _textures: HashMap<TextureHandle, SfBox<Texture>>,
+    _master_texture: TextureHandle,
+    _textures: HashMap<TextureHandle, Texture>,
     _sub_textures: HashMap<String, Vec<FloatRect>>
 }
 
@@ -24,13 +24,16 @@ impl TextureHandler {
     pub fn new() -> Self {
         Self {
             _handle_gen: 0,
-            _master_texture: RenderTexture::new(MASTER_TEXTURE_SIZE, MASTER_TEXTURE_SIZE, false).unwrap(),
+            _master_texture: 0,
             _textures: HashMap::new(),
             _sub_textures: HashMap::new()
         }
     }
 
-    pub fn create_master_texture<'a>(&mut self, texture_defs: Vec<TextureDef>, shader_handler: &ShaderHandler<'a>) {
+    pub fn create_master_texture<'a>(&mut self, texture_defs: Vec<TextureDef>, shader_handler: &ShaderHandler) {
+        // TODO: implement
+        // old code kept for reference
+        /*
         let mut textures = Vec::<(String, SfBox<Texture>, Vec<UIntRect>)>::with_capacity(texture_defs.len());
 
         self._sub_textures.clear();
@@ -131,17 +134,12 @@ impl TextureHandler {
             percent_pix
         );
         self._master_texture.display();
+        */
     }
 
     pub fn load_texture(&mut self, filename: &str) -> Option<TextureHandle> {
-        match Texture::from_file(filename) {
-            Some(t_box) => {
-                self._textures.insert(self._handle_gen, t_box);
-                self._handle_gen += 1;
-                Some(self._handle_gen - 1)
-            },
-            None        => None
-        }
+        // TODO: implement
+        None
     }
 
     pub fn unload_texture(&mut self, handle: TextureHandle) -> bool {
@@ -153,13 +151,13 @@ impl TextureHandler {
 
     pub fn get_texture(&self, handle: TextureHandle) -> Option<&Texture> {
         match self ._textures.get(&handle) {
-            Some(t_box) => Some(t_box.deref()),
+            Some(texture) => Some(texture),
             None        => None
         }
     }
 
     pub fn get_master_texture(&self) -> &Texture {
-        self._master_texture.texture()
+        self._textures.get(&self._master_texture).unwrap()
     }
 
     pub fn get_subrects(&self, filename: String) -> &Vec<FloatRect> {

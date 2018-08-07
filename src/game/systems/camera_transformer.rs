@@ -2,7 +2,7 @@ use specs::{Join, ParJoin, ReadStorage, ReadExpect, System, WriteStorage};
 use specs::prelude::ParallelIterator;
 
 use game::components::{ScreenPosition, WorldPosition};
-use graphics::ManagedCamera;
+use ligeia_graphics::ManagedCamera;
 
 pub struct CameraTransformer;
 

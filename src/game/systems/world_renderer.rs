@@ -8,18 +8,18 @@ use std::rc::Rc;
 
 use game::components::{ScreenPosition, WorldRenderable};
 use game::resources::VerticesNeeded;
-use graphics::{ShaderHandle, ShaderHandler, Sprite, TextureHandle, TextureHandler, Window};
+use ligeia_graphics::{ShaderHandle, ShaderHandler, Sprite, TextureHandle, TextureHandler, Window};
 
-pub struct WorldRenderer<'a> {
-    _shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+pub struct WorldRenderer{
+    _shader_handler: Rc<RefCell<ShaderHandler>>,
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _vertices: Vec<Vertex>,
     _window: Rc<RefCell<Window>>
 }
 
-impl<'a> WorldRenderer<'a> {
+impl WorldRenderer {
     pub fn new(
-        shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+        shader_handler: Rc<RefCell<ShaderHandler>>,
         texture_handler: Rc<RefCell<TextureHandler>>,
         window: Rc<RefCell<Window>>
     ) -> Self {
@@ -32,7 +32,7 @@ impl<'a> WorldRenderer<'a> {
     }
 }
 
-impl<'a, 'b> System<'a> for WorldRenderer<'b> {
+impl<'a> System<'a> for WorldRenderer {
     type SystemData = (ReadExpect<'a, VerticesNeeded>, ReadStorage<'a, ScreenPosition>, ReadStorage<'a, WorldRenderable>);
 
     fn run(&mut self, (vertices_needed, screen_pos, world_renderable): Self::SystemData) {

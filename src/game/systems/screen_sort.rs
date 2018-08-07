@@ -5,7 +5,7 @@ use std::sync::mpsc::channel;
 
 use game::components::{ScreenPosition, WorldRenderable};
 use game::resources::VerticesNeeded;
-use graphics::{ManagedCamera, Renderable};
+use ligeia_graphics::{ManagedCamera, Renderable};
 use game::resources::EntityCount;
 
 pub struct ScreenSort;

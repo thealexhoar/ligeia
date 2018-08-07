@@ -4,11 +4,11 @@ use std::rc::Rc;
 
 use game::Scene;
 use game::systems::*;
-use graphics::{ShaderHandler, TextureHandler, Window};
+use ligeia_graphics::{ShaderHandler, TextureHandler, Window};
 use physics::PhysicsWorld;
 
 pub fn testbed<'a>(
-    shader_handler: Rc<RefCell<ShaderHandler<'a>>>,
+    shader_handler: Rc<RefCell<ShaderHandler>>,
     texture_handler: Rc<RefCell<TextureHandler>>,
     window: Rc<RefCell<Window>>,
     physics_world: Rc<RefCell<PhysicsWorld>>

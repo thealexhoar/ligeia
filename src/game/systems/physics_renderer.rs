@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use game::components::ScreenPosition;
 use game::resources::VerticesNeeded;
-use graphics::Window;
+use ligeia_graphics::Window;
 use physics::PhysicsWorld;
 
 

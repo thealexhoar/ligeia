@@ -1,10 +1,9 @@
 use bit_set::BitSet;
 use ligeia_softcode::graphics::LayerDef;
 use ligeia_utils::rect::FloatRect;
-use sfml::graphics::{Vertex};
 use std::collections::HashMap;
 
-use graphics::{Renderable, ShaderHandle, TextureHandle};
+use {Renderable, ShaderHandle, TextureHandle, Vertex};
 
 #[derive(Clone, Debug)]
 pub struct LayeredSprite {
@@ -22,6 +21,7 @@ Vertices in a sprite layer go clockwise as such:
     | |
     3-2
 */
+
 
 impl LayeredSprite {
     pub fn new(origin_x: f32, origin_y: f32, width: f32, height: f32, layers: &LayerDef) -> Self {
@@ -92,16 +92,20 @@ impl Renderable for LayeredSprite {
             for i in 0..4 {
                 let index = index + i;
                 let (local_x, local_y) = self._base_vertices[i];
-                target[index].position.x = (local_x * camera_theta.cos() - local_y * camera_theta.sin()) + x;
-                target[index].position.y = (local_x * camera_theta.sin() + local_y * camera_theta.cos()) + y - (layer as f32);
-                target[index].tex_coords.x = match i {
-                    0 | 3 => rect.left,
-                    _     => rect.left + rect.width
-                };
-                target[index].tex_coords.y = match i {
-                    0 | 1 => rect.top,
-                    _     => rect.top + rect.height
-                };
+                target[index].set_position_xy(
+                    (local_x * camera_theta.cos() - local_y * camera_theta.sin()) + x,
+                    (local_x * camera_theta.sin() + local_y * camera_theta.cos()) + y - (layer as f32)
+                );
+                target[index].set_tex_coords_uv(
+                    match i {
+                        0 | 3 => rect.left,
+                        _     => rect.left + rect.width
+                    },
+                    match i {
+                        0 | 1 => rect.top,
+                        _     => rect.top + rect.height
+                    }
+                );
             }
         }
     }

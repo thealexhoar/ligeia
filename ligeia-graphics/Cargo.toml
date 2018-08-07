@@ -1,0 +1,11 @@
+[package]
+name = "ligeia-graphics"
+version = "0.1.0"
+authors = ["Alex Hoar <thealexhoar@gmail.com>"]
+
+[dependencies]
+bit-set = "0.4.0"
+gl = "0.10.0"
+ligeia-utils = { path = "../ligeia-utils" }
+ligeia-softcode = { path = "../ligeia-softcode" }
+sdl2 = "0.31"

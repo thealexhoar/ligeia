@@ -3,20 +3,17 @@ use serde_json;
 use std::fs::File;
 use std::io::Read;
 
-pub enum FileError {
-    FileLoadErr,
-    FileMalformedErr
-}
+use FileError;
 
-pub struct FileReader {
+pub struct FileLoader {
     _file: File
 }
 
-impl FileReader {
+impl FileLoader {
     pub fn open(filename: &str) -> Result<Self, FileError> {
         match File::open(filename) {
             Ok(file) => Ok(Self {_file: file}),
-            Err(_)   => Err(FileError::FileLoadErr)
+            Err(_)   => Err(FileError::FileDataLoadError)
         }
     }
 
@@ -25,7 +22,7 @@ impl FileReader {
     {
         match serde_json::from_reader(self._file) {
             Ok(val) => Ok(val),
-            Err(_)  => Err(FileError::FileMalformedErr)
+            Err(_)  => Err(FileError::FileMalformedError)
         }
     }
 }

@@ -1,5 +1,5 @@
 use ligeia_utils::rect::FloatRect;
-use graphics::Vertex;
+use Vertex;
 
 pub trait Renderable {
     fn radius_2(&self) -> f32;
