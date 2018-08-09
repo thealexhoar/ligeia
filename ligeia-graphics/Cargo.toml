@@ -8,4 +8,4 @@ bit-set = "0.4.0"
 gl = "0.10.0"
 ligeia-utils = { path = "../ligeia-utils" }
 ligeia-softcode = { path = "../ligeia-softcode" }
-sdl2 = "0.31"
+sdl2 = "0.31.0"

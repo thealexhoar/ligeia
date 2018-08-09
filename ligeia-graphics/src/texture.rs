@@ -4,10 +4,11 @@ use std::ops::Drop;
 
 use ligeia_utils::ImageLoader;
 
-use Color;
+use {Color, Vector2u};
 
 pub struct Texture {
-     _texture_id: GLuint
+    _texture_id: GLuint,
+    _size: Vector2u
 }
 
 impl Texture {
@@ -44,7 +45,8 @@ impl Texture {
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }
         Self {
-            _texture_id: tex
+            _texture_id: tex,
+            _size: Vector2u::new(width, height)
         }
     }
 
@@ -83,7 +85,8 @@ impl Texture {
         }
 
         Self {
-            _texture_id: tex
+            _texture_id: tex,
+            _size: Vector2u::new(width, height)
         }
     }
 
@@ -101,6 +104,10 @@ impl Texture {
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }
+    }
+
+    pub fn size(&self) -> Vector2u {
+        self._size
     }
 }
 

@@ -9,10 +9,12 @@ mod file_error;
 mod file_loader;
 mod image_loader;
 mod input;
+mod stopwatch;
 
 pub use file_error::FileError;
 pub use file_loader::FileLoader;
 pub use image_loader::ImageLoader;
+pub use stopwatch::Stopwatch;
 
 
 use std::f32::consts::PI as STD_PI;

@@ -2,8 +2,9 @@ use bit_set::BitSet;
 use ligeia_softcode::graphics::LayerDef;
 use ligeia_utils::rect::FloatRect;
 use std::collections::HashMap;
+use std::ops::IndexMut;
 
-use {Renderable, ShaderHandle, TextureHandle, Vertex};
+use {Color, Renderable, ShaderHandle, TextureHandle, Vertex};
 
 #[derive(Clone, Debug)]
 pub struct LayeredSprite {
@@ -45,7 +46,7 @@ impl LayeredSprite {
             _rect: FloatRect::new(origin_x - radius, origin_y - radius - (top_layer as f32), radius * 2., radius * 2. + top_layer as f32),
             _tex_coords: tex_coords,
             _layer_bits: layer_bits,
-            _vertex_count: layer_count * 4
+            _vertex_count: layer_count * 6 // from *4
         };
 
         layered_sprite.set_local_vertices(origin_x, origin_y, width, height);
@@ -87,15 +88,18 @@ impl Renderable for LayeredSprite {
         let mut index_counter = 0;
         for layer in &self._layer_bits {
             let rect = self._tex_coords[&layer];
-            let index = index_counter * 4;
+            let mut index = index_counter * 6;
             index_counter += 1;
-            for i in 0..4 {
-                let index = index + i;
+
+            let vals = vec![0, 1, 2, 0, 2, 3];
+            for i in vals {
                 let (local_x, local_y) = self._base_vertices[i];
                 target[index].set_position_xy(
                     (local_x * camera_theta.cos() - local_y * camera_theta.sin()) + x,
                     (local_x * camera_theta.sin() + local_y * camera_theta.cos()) + y - (layer as f32)
                 );
+
+                target[index].set_color(&Color::WHITE);
                 target[index].set_tex_coords_uv(
                     match i {
                         0 | 3 => rect.left,
@@ -106,7 +110,20 @@ impl Renderable for LayeredSprite {
                         _     => rect.top + rect.height
                     }
                 );
+
+                index += 1;
             }
+
+
+            /*
+            target[index].data = [0., 0., 1., 1., 1., 1., 0., 0.]; // top left
+            target[index+1].data = [8., 6., 1., 1., 1., 1., 1., 1.]; // bottom right
+            target[index+2].data = [0., 6., 1., 1., 1., 1., 0., 1.];// bottom left
+
+            target[index+3].data = [0., 0., 1., 1., 1., 1., 0., 0.]; // top left
+            target[index+4].data = [8., 6., 1., 1., 1., 1., 1., 1.]; // bottom right
+            target[index+5].data = [8., 0., 1., 1., 1., 1., 1., 0.];  // top right
+            */
         }
     }
 }

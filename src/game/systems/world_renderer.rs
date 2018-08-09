@@ -1,6 +1,3 @@
-use sfml::graphics::{PrimitiveType, RenderStates, Transformable, Vertex};
-use sfml::graphics::Sprite as SFSprite;
-use sfml::system::Vector2f;
 use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -8,7 +5,12 @@ use std::rc::Rc;
 
 use game::components::{ScreenPosition, WorldRenderable};
 use game::resources::VerticesNeeded;
-use ligeia_graphics::{ShaderHandle, ShaderHandler, Sprite, TextureHandle, TextureHandler, Window};
+use ligeia_graphics::{
+    ShaderHandle, ShaderHandler, Sprite,
+    TextureHandle, TextureHandler,
+    Vertex,
+    Window
+};
 
 pub struct WorldRenderer{
     _shader_handler: Rc<RefCell<ShaderHandler>>,
@@ -56,19 +58,16 @@ impl<'a> System<'a> for WorldRenderer {
 
         let texture_handler = self._texture_handler.borrow();
         //let texture_ref = texture_handler.get_texture(sprite.get_tex_handle()).unwrap();
-        let texture_ref = texture_handler.get_master_texture();
+        //let texture_ref = texture_handler.get_master_texture();
+        let texture_ref = texture_handler.get_simple_texture();
 
         let shader_handler = self._shader_handler.borrow();
         //let shader_ref = shader_handler.get_shader(sprite.get_shader_handle()).unwrap();
         let shader_ref = shader_handler.get_default().unwrap();
 
-        let mut render_states = RenderStates::default();
-        render_states.texture = Some(texture_ref);
-        render_states.shader = Some(shader_ref);
-
         let mut window = self._window.borrow_mut();
         //let screen_verts = sprite.get_world_vertices(screen_pos.x, screen_pos.y, screen_pos.theta);
 
-        window.draw_vertices(&self._vertices[0..vertices_needed], PrimitiveType::Quads, render_states);
+        window.draw_vertices(&self._vertices[0..vertices_needed], texture_ref, shader_ref, None);
     }
 }

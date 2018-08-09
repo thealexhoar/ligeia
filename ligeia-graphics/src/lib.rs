@@ -12,7 +12,9 @@ mod framebuffer;
 mod ground_sprite;
 mod layered_sprite;
 mod managed_camera;
+mod projection_matrix;
 mod renderable;
+mod render_texture;
 mod shader;
 mod shader_handler;
 mod shadow;
@@ -33,7 +35,9 @@ pub use framebuffer::Framebuffer;
 pub use ground_sprite::GroundSprite;
 pub use layered_sprite::LayeredSprite;
 pub use managed_camera::ManagedCamera;
+pub use projection_matrix::ProjectionMatrix;
 pub use renderable::Renderable;
+pub use render_texture::RenderTexture;
 pub use shader::Shader;
 pub use shader_handler::{ShaderHandle, ShaderHandler};
 pub use shadow::Shadow;
@@ -64,45 +68,8 @@ mod tests {
         let mut window = Window::new(&video, 800, 600, 800, 600, "test!");
 
         let mut shader_handler = ShaderHandler::new();
-        let vs_src: &str = "
-            #version 330
-            in vec2 position;
-            in vec4 color;
-            in vec2 tex_coords;
 
-            out vec4 v_color;
-            out vec2 v_tex_coords;
-
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-                v_color = color;
-                v_tex_coords = tex_coords;
-            }";
-        let fs_src: &str = "
-            #version 330
-
-            in vec4 v_color;
-            in vec2 v_tex_coords;
-
-            uniform sampler2D v_texture;
-
-            layout(location = 0) out vec4 out_color;
-
-            void main() {
-
-                out_color = texture(v_texture, v_tex_coords) * v_color;
-            }";
-
-        let shader_handle = shader_handler.load_shader(
-            vs_src,
-            fs_src,
-            "out_color",
-            "v_texture",
-            "position",
-            "color",
-            "tex_coords"
-        );
-        let shader = shader_handler.get_shader(shader_handle).unwrap();
+        let shader = shader_handler.get_default().unwrap();
 
         let texture0 = Texture::new_from_memory(
             2, 2,
@@ -118,24 +85,24 @@ mod tests {
 
 
         let vertices = vec![
-            Vertex::new(-0.5, 0.5, 1., 1., 1., 1., 0., 0.), // top left
-            Vertex::new(0.5, -0.5, 1., 1., 1., 1., 1., 1.), // bottom right
-            Vertex::new(-0.5, -0.5, 1., 1., 1., 1., 0., 1.),// bottom left
+            Vertex::new(0., 0., 1., 1., 1., 1., 0., 0.), // top left
+            Vertex::new(800., 600., 1., 1., 1., 1., 1., 1.), // bottom right
+            Vertex::new(0., 600., 1., 1., 1., 1., 0., 1.),// bottom left
 
-            Vertex::new(-0.5, 0.5, 1., 1., 1., 1., 0., 0.), // top left
-            Vertex::new(0.5, -0.5, 1., 1., 1., 1., 1., 1.), // bottom right
-            Vertex::new(0.5, 0.5, 1., 1., 1., 1., 1., 0.),  // top right
+            Vertex::new(0., 0., 1., 1., 1., 1., 0., 0.), // top left
+            Vertex::new(800., 600., 1., 1., 1., 1., 1., 1.), // bottom right
+            Vertex::new(800., 0., 1., 1., 1., 1., 1., 0.),  // top right
         ];
         for i in 0..2 {
             for j in 0..60 {
                 window.clear();
-                window.draw_vertices(&vertices[..], &texture0, shader);
+                window.draw_vertices(&vertices[..], &texture0, shader, None);
                 window.draw_framebuffer(shader);
                 window.display();
             }
             for j in 0..60 {
                 window.clear();
-                window.draw_vertices(&vertices[..], &texture1, shader);
+                window.draw_vertices(&vertices[..], &texture1, shader, None);
                 window.draw_framebuffer(shader);
                 window.display();
             }

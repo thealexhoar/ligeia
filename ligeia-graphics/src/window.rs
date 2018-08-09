@@ -12,12 +12,15 @@ use std::mem::{
     transmute
 };
 use std::ptr;
+use std::time::Duration;
 
+use ligeia_utils::Stopwatch;
 
 use {
     BASIC_VERTS,
     Color,
     Framebuffer,
+    ProjectionMatrix,
     SCREEN_VERTS,
     Shader,
     ShaderHandle, ShaderHandler,
@@ -30,11 +33,15 @@ pub struct Window {
     _delta_time: f32,
     _gl_context: GLContext,
     _should_close: bool,
+    _default_projection: ProjectionMatrix,
+    _size: (u32, u32),
+    _internal_size: (u32, u32),
     _fbo: Framebuffer,
     _vao: u32,
     _vbo: u32,
     _sampler: u32,
     _vbo_size: usize,
+    _stopwatch: Stopwatch,
     _window: SDLWindow
 }
 
@@ -97,18 +104,27 @@ impl Window {
 
 
         video.gl_set_swap_interval(SwapInterval::VSync);
+        //video.gl_set_swap_interval(SwapInterval::Immediate);
+
+        let mut default_projection = ProjectionMatrix::identity();
+        //default_projection.set_to_ortho(-1. * (internal_width / 2) as f32, -1. * (internal_height / 2) as f32, internal_width as f32, internal_height as f32);
+        default_projection.set_to_ortho(internal_width as f32, internal_height as f32);
 
         Self {
             //_clear_color: Color::new(0.9, 0.7, 0.8, 1.),
             _clear_color: Color::new(0., 0., 0., 1.),
-            _delta_time: 0.,
+            _delta_time: 1. / 60.,
             _gl_context: context,
             _should_close: false,
+            _default_projection: default_projection,
+            _size: (width, height),
+            _internal_size: (internal_width, internal_height),
             _fbo: framebuffer,
             _vao: vao,
             _vbo: vbo,
             _sampler: sampler,
-            _vbo_size: 0,
+            _vbo_size: 4,
+            _stopwatch: Stopwatch::new(),
             _window: window
         }
 
@@ -127,6 +143,14 @@ impl Window {
         }
     }
 
+    pub fn clear_with_rgba(&mut self, r: f32, g: f32, b: f32, a: f32) {
+        unsafe {
+            gl::ClearColor(r, g, b, a);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+    }
+
+
     //prep for rendering
     pub fn begin(&mut self) {
         unsafe {
@@ -134,6 +158,8 @@ impl Window {
             gl::Disable(gl::DEPTH_TEST);
             gl::Enable(gl::TEXTURE_2D);
             gl::Enable(gl::BLEND);
+
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         }
     }
 
@@ -143,18 +169,25 @@ impl Window {
         &mut self,
         vertices: &[Vertex],
         texture: &Texture,
-        shader: &Shader
+        shader: &Shader,
+        projection: Option<&ProjectionMatrix>
     ) {
         let vertex_count = vertices.len();
         let buffer_size = vertex_count * VERTEX_SIZE;
 
+        let projection_matrix = match projection {
+            Some(val) => *val,
+            None      => self._default_projection
+        };
+
         unsafe {
             self._fbo.bind();
+            gl::Viewport(0, 0, self._internal_size.0 as i32, self._internal_size.1 as i32);
             gl::ClearColor(0., 0., 0., 0.);
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
             gl::ActiveTexture(gl::TEXTURE0);
-            shader.bind();
+            shader.bind(&projection_matrix);
             texture.bind();
             gl::BindSampler(0, self._sampler);
 
@@ -162,6 +195,7 @@ impl Window {
             gl::BindBuffer(gl::ARRAY_BUFFER, self._vbo);
 
             if buffer_size > self._vbo_size {
+                self._vbo_size = buffer_size;
                 gl::BufferData(
                     gl::ARRAY_BUFFER,
                     (buffer_size * size_of::<GLfloat>()) as GLsizeiptr,
@@ -196,8 +230,9 @@ impl Window {
         unsafe {
             self.clear();
 
+            gl::Viewport(0, 0, self._size.0 as i32, self._size.1 as i32);
             gl::ActiveTexture(gl::TEXTURE0);
-            shader.bind();
+            shader.bind(&ProjectionMatrix::identity());
             self._fbo.texture().bind();
             gl::BindSampler(0, self._sampler);
 
@@ -236,8 +271,9 @@ impl Window {
 
     // render the framebuffer and update delta time
     pub fn display(&mut self) {
-        //TODO: implement
         self._window.gl_swap_window();
+        let duration = self._stopwatch.reset();
+        self._delta_time = (duration.as_secs() as f64 + duration.subsec_nanos() as f64 * 1e-9) as f32;
     }
 
 

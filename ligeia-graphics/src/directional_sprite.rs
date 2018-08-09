@@ -71,17 +71,21 @@ impl Renderable for DirectionalSprite {
 
     fn rect(&self) -> &FloatRect { &self._rect }
 
-    fn vertices_needed(&self) -> usize { 4 }
+    fn vertices_needed(&self) -> usize { 6 }
 
     fn write_to_vertices(&self, x: f32, y: f32, theta: f32, camera_theta: f32, target: &mut [Vertex]) {
         let direction = radians_to_direction8(camera_theta);
 
         let tex_coords = &self._tex_rects[direction as usize];
-        for i in 0..4 {
+        let vals = vec![0, 1, 2, 0, 2, 3];
+        let mut index = 0;
+        for i in vals {
             let (local_x, local_y) = self._vertices[i];
-            target[i].set_position_x((local_x * theta.cos() - local_y * theta.sin()) + x);
-            target[i].set_position_y((local_x * theta.sin() + local_y * theta.cos()) + y);
-            target[i].set_tex_coords_uv(
+            target[index].set_position_xy(
+                (local_x * theta.cos() - local_y * theta.sin()) + x,
+                (local_x * theta.sin() + local_y * theta.cos()) + y
+            );
+            target[index].set_tex_coords_uv(
                 match i {
                 0 | 3 => tex_coords.left,
                 _     => tex_coords.left + tex_coords.width
@@ -91,6 +95,7 @@ impl Renderable for DirectionalSprite {
                     _     => tex_coords.top + tex_coords.height
                 }
             );
+            index += 1;
         }
     }
 

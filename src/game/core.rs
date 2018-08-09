@@ -1,5 +1,20 @@
+use ligeia_graphics::{
+    DirectionalSprite, LayeredSprite,
+    ManagedCamera,
+    Renderable,
+    ShaderHandler,
+    Sprite,
+    Texture, TextureHandler,
+    Vertex,
+    Window
+};
 use ligeia_softcode::graphics::{LayerDef, TextureDef};
 use ligeia_utils::rect::{FloatRect, UIntRect};
+use sdl2::{
+    event::Event,
+    EventPump,
+    VideoSubsystem
+};
 use specs::{Dispatcher, DispatcherBuilder, World};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -12,7 +27,6 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use ligeia_graphics::{DirectionalSprite, LayeredSprite, ManagedCamera, Renderable, ShaderHandler, Sprite, TextureHandler, Window};
 use physics::{construct_world, PhysicsWorld};
 use util::{FabricationDef, MasterFabricator};
 
@@ -28,10 +42,29 @@ pub struct Core<'a> {
 }
 
 impl<'a> Core<'a> {
-    pub fn new(width: u32, height: u32, internal_width: u32, internal_height: u32, pixel_factor: u32, title: &str) -> Self {
+    pub fn new(
+        sdl_video: &VideoSubsystem,
+        width: u32,
+        height: u32,
+        internal_width: u32,
+        internal_height: u32,
+        title: &str
+    ) -> Self {
+        let window = Rc::new(RefCell::new(
+            Window::new(
+                sdl_video,
+                width,
+                height,
+                internal_width,
+                internal_height,
+                title
+            )
+        ));
+
+
+
         let shader_handler = Rc::new(RefCell::new(ShaderHandler::new()));
         let texture_handler = Rc::new(RefCell::new(TextureHandler::new()));
-        let window = Rc::new(RefCell::new(Window::new(width, height, internal_width, internal_height, pixel_factor, title)));
         let physics_world = construct_world();
 
         let mut core = Self {
@@ -171,22 +204,34 @@ impl<'a> Core<'a> {
         true
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, event_pump: &mut EventPump) -> bool {
         {
             let mut window = self._window.borrow_mut();
-            window.clear();
+            window.begin();
+            window.clear_with_rgba(1., 0.8, 0.5, 1.);
         }
 
         if self._current_scene > 0 {
             self._scenes.get_mut(&self._current_scene).unwrap().update(&self._world);
         }
 
+        let mut should_close = false;
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit {..} => {should_close = true},
+                _ => {}
+            }
+        }
+
 
         let dt = {
             //borrow window inside a smaller scope, to drop the borrow at the end
             let mut window = self._window.borrow_mut();
-            window.process_events();
-            window.display(&self._shader_handler.deref().borrow());
+            let shader_handler = self._shader_handler.borrow();
+            let shader = shader_handler.get_default().unwrap();
+
+            window.draw_framebuffer(shader);
+            window.display();
 
             //and snag delta_time while we have a borrow on window
             window.delta_time()
@@ -202,11 +247,9 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.6 * dt;
-    }
+        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.1 * dt;
 
-    pub fn should_close(&self) -> bool {
-        self._window.borrow().deref().should_close()
+        should_close
     }
 
     fn init_world(&mut self, internal_width: u32, internal_height: u32) {

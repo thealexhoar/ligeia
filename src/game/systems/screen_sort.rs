@@ -55,7 +55,7 @@ impl<'a> System<'a> for ScreenSort {
 
 
         // TODO: optimize sort?
-        entity_vec.sort_by(|e1, e2| (screen_pos.get(*e1).unwrap().y.partial_cmp(&screen_pos.get(*e2).unwrap().y).unwrap()));
+        entity_vec.sort_by(|e1, e2| (screen_pos.get(*e2).unwrap().y.partial_cmp(&screen_pos.get(*e1).unwrap().y).unwrap()));
 
         let mut vert_sum = 0;
         for e in &entity_vec {

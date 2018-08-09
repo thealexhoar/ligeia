@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::ops::Deref;
 
 //TODO: refactor to not use sfml
-use {BASIC_VERTS, Color, ShaderHandler, Texture, Vector2f};
+use {BASIC_VERTS, Color, ShaderHandler, RenderTexture, Texture, Vector2f, Vertex};
 
 pub type TextureHandle = u32;
 
@@ -15,46 +15,48 @@ static CLEAR_COLOR: Color = Color::TRANSPARENT;
 
 pub struct TextureHandler {
     _handle_gen: TextureHandle,
-    _master_texture: TextureHandle,
+    _master_texture: RenderTexture,
     _textures: HashMap<TextureHandle, Texture>,
     _sub_textures: HashMap<String, Vec<FloatRect>>
 }
 
 impl TextureHandler {
     pub fn new() -> Self {
-        Self {
+        let mut out = Self {
             _handle_gen: 0,
-            _master_texture: 0,
+            _master_texture: RenderTexture::new(MASTER_TEXTURE_SIZE, MASTER_TEXTURE_SIZE),
             _textures: HashMap::new(),
             _sub_textures: HashMap::new()
-        }
+        };
+
+        out.add_texture(Texture::new_from_memory(
+            2, 2,
+            vec![
+                1., 0., 0., 1.,
+                0., 1., 0., 1.,
+                0., 0., 1., 1.,
+                1., 1., 0., 1.,
+            ]
+        ));
+
+        out
     }
 
     pub fn create_master_texture<'a>(&mut self, texture_defs: Vec<TextureDef>, shader_handler: &ShaderHandler) {
-        // TODO: implement
-        // old code kept for reference
-        /*
-        let mut textures = Vec::<(String, SfBox<Texture>, Vec<UIntRect>)>::with_capacity(texture_defs.len());
-
+        let mut textures: Vec<(String, Texture, Vec<UIntRect>)> = Vec::with_capacity(texture_defs.len());
         self._sub_textures.clear();
-
         for texture_def in &texture_defs {
             textures.push((
                 texture_def.filename.clone(),
-                Texture::from_file(texture_def.filename.as_str()).unwrap(),
+                Texture::new_from_file(texture_def.filename.as_str()),
                 texture_def.frames.clone()
             ));
         }
 
         //sort by height
-        textures.sort_by(|t1, t2| t2.1.deref().size().y.cmp(&t1.1.deref().size().y));
+        textures.sort_by(|t1, t2| t2.1.size().y.cmp(&t1.1.size().y));
 
-        let view = View::new(
-            Vector2f { x: MASTER_TEXTURE_SIZE_F * 0.5, y: MASTER_TEXTURE_SIZE_F * 0.5},
-            Vector2f { x: MASTER_TEXTURE_SIZE_F, y: -MASTER_TEXTURE_SIZE_F}
-        );
-        self._master_texture.set_view(&view);
-        self._master_texture.clear(&CLEAR_COLOR);
+        self._master_texture.clear();
 
         let mut top: u32 = 0;
         let mut left: u32 = 0;
@@ -64,7 +66,6 @@ impl TextureHandler {
             let width = next_texture.size().x;
             let height = next_texture.size().y;
 
-
             if left + width >= MASTER_TEXTURE_SIZE {
                 top = next_top;
                 left = 0;
@@ -73,39 +74,45 @@ impl TextureHandler {
                 next_top = top + height;
             }
 
-            let mut rs = RenderStates::default();
-            rs.blend_mode = BlendMode::default();
-            rs.blend_mode.color_src_factor = Factor::One;
-            rs.blend_mode.color_dst_factor = Factor::Zero;
-            rs.blend_mode.alpha_src_factor = Factor::One;
-            rs.blend_mode.alpha_dst_factor = Factor::Zero;
-            rs.shader = shader_handler.get_default();
-            rs.texture = Some(next_texture.deref());
-
-            let vertices: [Vertex; 4] = [
-                Vertex {
-                    position: Vector2f {x: left as f32, y: top as f32},
-                    color: Color::WHITE,
-                    tex_coords: Vector2f {x: 0., y: 0.}
-                },
-                Vertex {
-                    position: Vector2f {x: (left + width) as f32, y: top as f32},
-                    color: Color::WHITE,
-                    tex_coords: Vector2f {x: 1., y: 0.}
-                },
-                Vertex {
-                    position: Vector2f {x: (left + width) as f32, y: (top + height) as f32},
-                    color: Color::WHITE,
-                    tex_coords: Vector2f {x: 1., y: 1.}
-                },
-                Vertex {
-                    position: Vector2f {x: left as f32, y: (top + height) as f32},
-                    color: Color::WHITE,
-                    tex_coords: Vector2f {x: 0., y: 1.}
-                },
+            let vertices: [Vertex; 6] = [
+                Vertex::new(
+                    left as f32, top as f32,
+                    1., 1., 1., 1.,
+                    0., 0.
+                ),
+                Vertex::new(
+                    (left + width) as f32, top as f32,
+                    1., 1., 1., 1.,
+                    1., 0.
+                ),
+                Vertex::new(
+                    (left + width) as f32, (top + height) as f32,
+                    1., 1., 1., 1.,
+                    1., 1.
+                ),
+                Vertex::new(
+                    left as f32, top as f32,
+                    1., 1., 1., 1.,
+                    0., 0.
+                ),
+                Vertex::new(
+                    (left + width) as f32, (top + height) as f32,
+                    1., 1., 1., 1.,
+                    1., 1.
+                ),
+                Vertex::new(
+                    left as f32, (top + height) as f32,
+                    1., 1., 1., 1.,
+                    0., 1.
+                ),
             ];
 
-            self._master_texture.draw_primitives(&vertices, PrimitiveType::Quads, rs);
+            self._master_texture.draw_vertices(
+                &vertices,
+                next_texture,
+                shader_handler.get_default().unwrap(),
+                None
+            );
 
             let mut frame_vec = Vec::with_capacity(frames.len());
 
@@ -133,13 +140,19 @@ impl TextureHandler {
             used_pix,
             percent_pix
         );
-        self._master_texture.display();
-        */
     }
 
     pub fn load_texture(&mut self, filename: &str) -> Option<TextureHandle> {
         // TODO: implement
         None
+    }
+
+    pub fn add_texture(&mut self, texture: Texture) -> TextureHandle {
+        self._textures.insert(self._handle_gen, texture);
+        let out = self._handle_gen;
+        self._handle_gen += 1;
+
+        out
     }
 
     pub fn unload_texture(&mut self, handle: TextureHandle) -> bool {
@@ -157,7 +170,11 @@ impl TextureHandler {
     }
 
     pub fn get_master_texture(&self) -> &Texture {
-        self._textures.get(&self._master_texture).unwrap()
+        self._master_texture.texture()
+    }
+
+    pub fn get_simple_texture(&self) -> &Texture {
+        self._textures.get(&0).unwrap()
     }
 
     pub fn get_subrects(&self, filename: String) -> &Vec<FloatRect> {

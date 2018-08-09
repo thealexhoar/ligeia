@@ -17,7 +17,7 @@ pub struct Framebuffer {
 impl Framebuffer {
     pub fn new(width: u32, height: u32) -> Self {
         let mut fbo = 0;
-        let texture = Texture::new_with_color(width, height, Color::new(1., 1., 0., 1.));
+        let texture = Texture::new_with_color(width, height, Color::new(0., 0., 0., 0.));
         unsafe {
             gl::GenFramebuffers(1, &mut fbo);
             gl::BindFramebuffer(gl::FRAMEBUFFER, fbo);

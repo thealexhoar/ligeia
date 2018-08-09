@@ -1,4 +1,3 @@
-use sfml::graphics::{RenderStates, Transformable, Vertex};
 use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -6,7 +5,7 @@ use std::rc::Rc;
 
 use game::components::ScreenPosition;
 use game::resources::VerticesNeeded;
-use ligeia_graphics::Window;
+use ligeia_graphics::{Vertex, Window};
 use physics::PhysicsWorld;
 
 

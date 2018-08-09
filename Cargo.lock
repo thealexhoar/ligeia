@@ -111,38 +111,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "csfml-audio-sys"
-version = "0.4.0"
-dependencies = [
- "csfml-system-sys 0.4.0",
- "sfml-build 0.2.0",
-]
-
-[[package]]
-name = "csfml-graphics-sys"
-version = "0.4.0"
-dependencies = [
- "csfml-system-sys 0.4.0",
- "csfml-window-sys 0.4.0",
- "sfml-build 0.2.0",
-]
-
-[[package]]
-name = "csfml-system-sys"
-version = "0.4.0"
-dependencies = [
- "sfml-build 0.2.0",
-]
-
-[[package]]
-name = "csfml-window-sys"
-version = "0.4.0"
-dependencies = [
- "csfml-system-sys 0.4.0",
- "sfml-build 0.2.0",
-]
-
-[[package]]
 name = "deflate"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -330,9 +298,9 @@ dependencies = [
  "nalgebra 0.14.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncollide2d 0.15.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "nphysics2d 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2 0.31.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "sfml 0.14.0",
  "specs 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "specs-derive 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -722,21 +690,6 @@ dependencies = [
  "num-traits 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.37 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "sfml"
-version = "0.14.0"
-dependencies = [
- "bitflags 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "csfml-audio-sys 0.4.0",
- "csfml-graphics-sys 0.4.0",
- "csfml-system-sys 0.4.0",
- "csfml-window-sys 0.4.0",
-]
-
-[[package]]
-name = "sfml-build"
-version = "0.2.0"
 
 [[package]]
 name = "shred"

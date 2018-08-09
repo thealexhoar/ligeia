@@ -9,7 +9,10 @@ use std::ops::{Deref, Drop};
 use std::ptr;
 use std::str;
 
-use VERTEX_SIZE;
+use {
+    ProjectionMatrix,
+    VERTEX_SIZE
+};
 
 //TODO: implement
 pub struct Shader {
@@ -18,7 +21,8 @@ pub struct Shader {
     _frag_texture_uniform: String,
     _vert_pos_name: String,
     _vert_color_name: String,
-    _vert_tex_coords_name: String
+    _vert_tex_coords_name: String,
+    _vert_proj_uniform: String
 }
 
 impl Shader {
@@ -29,7 +33,8 @@ impl Shader {
         frag_texture_uniform: &str,
         vert_pos_name: &str,
         vert_color_name: &str,
-        vert_tex_coords_name: &str
+        vert_tex_coords_name: &str,
+        vert_proj_uniform: &str
     ) -> Self {
         let vs = Self::compile_shader(vert_source, gl::VERTEX_SHADER);
         let fs = Self::compile_shader(frag_source, gl::FRAGMENT_SHADER);
@@ -41,14 +46,29 @@ impl Shader {
             _frag_texture_uniform: frag_texture_uniform.to_string(),
             _vert_pos_name: vert_pos_name.to_string(),
             _vert_color_name: vert_color_name.to_string(),
-            _vert_tex_coords_name: vert_tex_coords_name.to_string()
+            _vert_tex_coords_name: vert_tex_coords_name.to_string(),
+            _vert_proj_uniform: vert_proj_uniform.to_string()
         }
     }
 
-    pub fn bind(&self) {
+    pub fn bind(&self, projection: &ProjectionMatrix) {
         unsafe {
             gl::UseProgram(self._program_id);
-            gl::Uniform1i(gl::GetUniformLocation(self._program_id, CString::new(self._frag_texture_uniform.as_str()).unwrap().as_ptr()), 0);
+            //NOTE: the 0 at the end of the function call represents
+            //      GL_TEXTURE0 (the texture unit we care for)
+            gl::Uniform1i(
+                gl::GetUniformLocation(
+                    self._program_id,
+                    CString::new(self._frag_texture_uniform.as_str()).unwrap().as_ptr()
+                ),
+                0
+            );
+            gl::UniformMatrix3fv(
+                gl::GetUniformLocation(self._program_id, CString::new(self._vert_proj_uniform.as_str()).unwrap().as_ptr()),
+                1,
+                gl::FALSE,// TRANSPOSE, true if row-major, false if column-major
+                transmute(&projection.data()[0])
+            );
             gl::BindFragDataLocation(self._program_id, 0, CString::new(self._frag_data_location.as_str()).unwrap().as_ptr());
 
             let pos_attr = gl::GetAttribLocation(self._program_id, CString::new(self._vert_pos_name.as_str()).unwrap().as_ptr());
