@@ -28,8 +28,10 @@ pub struct RenderTexture {
 }
 
 impl RenderTexture {
-    pub fn new(width: u32, height: u32) -> Self {
-        let framebuffer = Framebuffer::new(width, height);
+    pub fn new(width: i32, height: i32) -> Self {
+        let uwidth = width.abs() as u32;
+        let uheight = height.abs() as u32;
+        let framebuffer = Framebuffer::new(uwidth, uheight);
         let mut vao = 0;
         let mut vbo = 0;
         let mut sampler = 0;
@@ -55,7 +57,7 @@ impl RenderTexture {
             _vao: vao,
             _vbo: vbo,
             _vbo_size: 0,
-            _size: (width, height),
+            _size: (uwidth, uheight),
             _sampler: sampler,
             _default_projection: default_projection
         }

@@ -229,8 +229,11 @@ impl<'a> Core<'a> {
             let mut window = self._window.borrow_mut();
             let shader_handler = self._shader_handler.borrow();
             let shader = shader_handler.get_default().unwrap();
+            let texture_handler = self._texture_handler.borrow();
+            let texture = texture_handler.get_master_texture();
 
             window.draw_framebuffer(shader);
+            //window.draw_single_texture(shader, texture);
             window.display();
 
             //and snag delta_time while we have a borrow on window
@@ -247,7 +250,7 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.1 * dt;
+        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.5 * dt;
 
         should_close
     }

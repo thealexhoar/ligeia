@@ -42,7 +42,7 @@ impl ManagedCamera {
     }
 
     pub fn overlaps_with(&self, x: f32, y: f32, radius_2: f32, rect: &FloatRect) -> bool {
-        let dx = self.x - x;
+        /*let dx = self.x - x;
         let dy = self.y - y;
         let d2 = dx * dx + dy * dy;
         if d2 <= self._radius_2 + radius_2 {
@@ -50,6 +50,8 @@ impl ManagedCamera {
         }
         else {
             false
-        }
+        }*/
+
+        self._rect.intersects_rect(x, y, rect)
     }
 }

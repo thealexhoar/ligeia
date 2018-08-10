@@ -40,6 +40,7 @@ pub struct Window {
     _vao: u32,
     _vbo: u32,
     _sampler: u32,
+    _fbo_sampler: u32,
     _vbo_size: usize,
     _stopwatch: Stopwatch,
     _window: SDLWindow
@@ -77,6 +78,7 @@ impl Window {
         let mut vao = 0;
         let mut vbo = 0;
         let mut sampler = 0;
+        let mut fbo_sampler = 0;
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
             gl::BindVertexArray(vao);
@@ -100,6 +102,12 @@ impl Window {
             gl::SamplerParameteri(sampler, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
             gl::SamplerParameteri(sampler, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
             gl::SamplerParameteri(sampler, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
+
+            gl::GenSamplers(1, &mut fbo_sampler);
+            gl::SamplerParameteri(fbo_sampler, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+            gl::SamplerParameteri(fbo_sampler, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+            gl::SamplerParameteri(fbo_sampler, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+            gl::SamplerParameteri(fbo_sampler, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
         }
 
 
@@ -123,6 +131,7 @@ impl Window {
             _vao: vao,
             _vbo: vbo,
             _sampler: sampler,
+            _fbo_sampler: fbo_sampler,
             _vbo_size: 4,
             _stopwatch: Stopwatch::new(),
             _window: window
@@ -222,6 +231,48 @@ impl Window {
         }
     }
 
+    pub fn draw_single_texture(&mut self, shader: &Shader, texture: &Texture) {
+        let vertices = &SCREEN_VERTS;
+        let vertex_count = 4;
+        let buffer_size = vertex_count * VERTEX_SIZE;
+
+        unsafe {
+            self.clear();
+
+            gl::Viewport(0, 0, self._size.0 as i32, self._size.1 as i32);
+            gl::ActiveTexture(gl::TEXTURE0);
+            shader.bind(&ProjectionMatrix::identity());
+            texture.bind();
+            gl::BindSampler(0, self._sampler);
+
+            gl::BindVertexArray(self._vao);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self._vbo);
+
+            gl::BufferSubData(
+                gl::ARRAY_BUFFER,
+                0,
+                (buffer_size * size_of::<GLfloat>()) as GLsizeiptr,
+                transmute(&vertices[0])
+            );
+
+            let indices: Vec<GLuint> = vec![
+                0, 1, 2,
+                0, 2, 3
+            ];
+
+            gl::DrawElements(
+                gl::TRIANGLES,
+                6,
+                gl::UNSIGNED_INT,
+                transmute(&indices[0])
+            );
+
+            gl::BindSampler(0, 0);
+            Texture::unbind();
+            Shader::unbind();
+        }
+    }
+
     pub fn draw_framebuffer(&mut self, shader: &Shader) {
         let vertices = &SCREEN_VERTS;
         let vertex_count = 4;
@@ -234,7 +285,7 @@ impl Window {
             gl::ActiveTexture(gl::TEXTURE0);
             shader.bind(&ProjectionMatrix::identity());
             self._fbo.texture().bind();
-            gl::BindSampler(0, self._sampler);
+            gl::BindSampler(0, self._fbo_sampler);
 
             gl::BindVertexArray(self._vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, self._vbo);

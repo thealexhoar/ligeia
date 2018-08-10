@@ -58,8 +58,8 @@ impl<'a> System<'a> for WorldRenderer {
 
         let texture_handler = self._texture_handler.borrow();
         //let texture_ref = texture_handler.get_texture(sprite.get_tex_handle()).unwrap();
-        //let texture_ref = texture_handler.get_master_texture();
-        let texture_ref = texture_handler.get_simple_texture();
+        let texture_ref = texture_handler.get_master_texture();
+        //let texture_ref = texture_handler.get_simple_texture();
 
         let shader_handler = self._shader_handler.borrow();
         //let shader_ref = shader_handler.get_shader(sprite.get_shader_handle()).unwrap();

@@ -37,7 +37,7 @@ impl ProjectionMatrix {
         self._data[M21] = 0.;
         self._data[M31] = 0.;
         self._data[M12] = 0.;
-        self._data[M22] = -2. / height;
+        self._data[M22] = 2. / height;
         self._data[M32] = 0.;
         self._data[M13] = 0.;
         self._data[M23] = 0.;

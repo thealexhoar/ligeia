@@ -24,7 +24,7 @@ impl TextureHandler {
     pub fn new() -> Self {
         let mut out = Self {
             _handle_gen: 0,
-            _master_texture: RenderTexture::new(MASTER_TEXTURE_SIZE, MASTER_TEXTURE_SIZE),
+            _master_texture: RenderTexture::new(MASTER_TEXTURE_SIZE as i32,  MASTER_TEXTURE_SIZE as i32),
             _textures: HashMap::new(),
             _sub_textures: HashMap::new()
         };
@@ -74,7 +74,7 @@ impl TextureHandler {
                 next_top = top + height;
             }
 
-            let vertices: [Vertex; 6] = [
+            let mut vertices: [Vertex; 6] = [
                 Vertex::new(
                     left as f32, top as f32,
                     1., 1., 1., 1.,
@@ -106,6 +106,14 @@ impl TextureHandler {
                     0., 1.
                 ),
             ];
+
+            for i in 0..6 {
+                let (x, y) = vertices[i].position_xy();
+                vertices[i].set_position_xy(
+                    x - MASTER_TEXTURE_SIZE_F * 0.5,
+                    y - MASTER_TEXTURE_SIZE_F * 0.5
+                );
+            }
 
             self._master_texture.draw_vertices(
                 &vertices,
