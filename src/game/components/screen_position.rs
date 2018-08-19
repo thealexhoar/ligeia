@@ -1,4 +1,4 @@
-use specs::{Component, EntityBuilder, VecStorage};
+use specs::{Builder, Component, EntityBuilder, VecStorage};
 use std::any::{Any, TypeId};
 use std::ops::Deref;
 use std::sync::Arc;

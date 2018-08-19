@@ -6,24 +6,27 @@ use std::rc::Rc;
 use game::resources::{DeltaTime, PhysicsTimeAccumulator};
 use physics::{PhysicsWorld, PHYSICS_TIMESTEP};
 
-pub struct Physics {
-    _phys_world: Rc<RefCell<PhysicsWorld>>
-}
+pub struct Physics;
 
 impl Physics {
-    pub fn new(phys_world: Rc<RefCell<PhysicsWorld>>) -> Self {
-        Self { _phys_world: phys_world}
-    }
+    pub fn new() -> Self { Self {} }
 }
 
 impl<'a> System<'a> for Physics {
     type SystemData = (
         ReadExpect<'a, DeltaTime>,
-        WriteExpect<'a, PhysicsTimeAccumulator>
+        WriteExpect<'a, PhysicsTimeAccumulator>,
+        WriteExpect<'a, PhysicsWorld>
     );
 
-    fn run(&mut self, (delta_time, mut time_accumulator): Self::SystemData) {
-        let mut world = self._phys_world.borrow_mut();
+    fn run (
+        &mut self,
+        (
+            delta_time,
+            mut time_accumulator,
+            mut world
+        ): Self::SystemData
+    ) {
         let mut temp_dt = delta_time.dt + time_accumulator.time;
         while temp_dt > PHYSICS_TIMESTEP {
             world.step();

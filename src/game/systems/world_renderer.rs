@@ -3,14 +3,15 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use game::components::{ScreenPosition, WorldRenderable};
-use game::resources::VerticesNeeded;
 use ligeia_graphics::{
     ShaderHandle, ShaderHandler, Sprite,
     TextureHandle, TextureHandler,
     Vertex,
     Window
 };
+
+use game::components::{ScreenPosition, WorldRenderable};
+use game::resources::VerticesNeeded;
 
 pub struct WorldRenderer{
     _shader_handler: Rc<RefCell<ShaderHandler>>,

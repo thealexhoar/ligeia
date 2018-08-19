@@ -1,4 +1,4 @@
-use specs::{Component, Entity, EntityBuilder, World};
+use specs::{Builder, Component, Entity, EntityBuilder, World};
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -44,7 +44,9 @@ impl MasterFabricator {
     pub fn build(&self, mut fabrication_def: FabricationDef, world: &mut World) -> Entity {
         let mut entity_builder = world.create_entity();
 
-        let keys = fabrication_def._component_defs.keys().map(|type_id: &TypeId| *type_id).collect::<Vec<TypeId>>();
+        let keys = fabrication_def._component_defs.keys()
+            .map(|type_id: &TypeId| *type_id)
+            .collect::<Vec<TypeId>>();
 
         for type_id in keys {
             if let Some(data) = fabrication_def._component_defs.remove(&type_id) {

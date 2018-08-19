@@ -1,4 +1,4 @@
-use specs::{Component, EntityBuilder, VecStorage};
+use specs::{Builder, Component, EntityBuilder, VecStorage};
 use std::any::{Any, TypeId};
 use std::ops::Deref;
 use std::sync::Arc;
@@ -28,7 +28,7 @@ impl Fabricator for WorldPositionFabricator {
 
     fn build_onto<'a>(&self, data: Box<Any>, entity_builder: EntityBuilder<'a>) -> EntityBuilder<'a> {
         if let Ok(world_pos) = data.downcast::<WorldPosition>() {
-            entity_builder.with(*world_pos.deref())
+            entity_builder.with(*world_pos.deref()) // data is copied
         }
         else {
             entity_builder

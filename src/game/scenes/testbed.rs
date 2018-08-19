@@ -10,14 +10,12 @@ use physics::PhysicsWorld;
 pub fn testbed<'a>(
     shader_handler: Rc<RefCell<ShaderHandler>>,
     texture_handler: Rc<RefCell<TextureHandler>>,
-    window: Rc<RefCell<Window>>,
-    physics_world: Rc<RefCell<PhysicsWorld>>
+    window: Rc<RefCell<Window>>
 ) -> Scene<'a> {
     let world_renderer = WorldRenderer::new(shader_handler, texture_handler, window);
-    let physics = Physics::new(physics_world.clone());
     let dispatchers = vec![
         Box::new(DispatcherBuilder::new()
-            .with_thread_local(physics)
+            .with_thread_local(Physics::new())
             .build()
         ),
         Box::new(DispatcherBuilder::new()

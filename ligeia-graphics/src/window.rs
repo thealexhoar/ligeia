@@ -332,7 +332,7 @@ impl Window {
 
     // close the window
     pub fn close(&self) -> bool {
-        //TODO: implement
+        //TODO: implement?
         true
     }
 

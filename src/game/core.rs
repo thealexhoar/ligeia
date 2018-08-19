@@ -28,7 +28,7 @@ use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
 use physics::{construct_world, PhysicsWorld};
-use util::{FabricationDef, MasterFabricator};
+use util::{FabricationDef, MasterDeconstructor, MasterFabricator};
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -37,7 +37,7 @@ pub struct Core<'a> {
     _texture_handler: Rc<RefCell<TextureHandler>>,
     _window: Rc<RefCell<Window>>,
     _world: World,
-    _physics_world: Rc<RefCell<PhysicsWorld>>,
+    _master_deconstructor: MasterDeconstructor,
     _master_fabricator: MasterFabricator
 }
 
@@ -74,7 +74,7 @@ impl<'a> Core<'a> {
             _texture_handler: Rc::clone(&texture_handler),
             _window: Rc::clone(&window),
             _world: World::new(),
-            _physics_world: Rc::clone(&physics_world),
+            _master_deconstructor: MasterDeconstructor::new(),
             _master_fabricator: MasterFabricator::new()
         };
 
@@ -179,8 +179,7 @@ impl<'a> Core<'a> {
             testbed(
                 Rc::clone(&shader_handler),
                 Rc::clone(&texture_handler),
-                Rc::clone(&window),
-                Rc::clone(&physics_world)
+                Rc::clone(&window)
             )
         );
 
@@ -268,6 +267,7 @@ impl<'a> Core<'a> {
         self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(NextScene::with_id(1));
         self._world.add_resource(PhysicsTimeAccumulator::new());
+        self._world.add_resource(PhysicsWorld::new());
         self._world.add_resource(VerticesNeeded::new());
 
         self._master_fabricator.register(ScreenPositionFabricator);
@@ -379,6 +379,7 @@ impl<'a> Core<'a> {
 
         while self._world.read_resource::<EntitiesToKill>().entities.len() > 0 {
             let entity = self._world.write_resource::<EntitiesToKill>().entities.pop().unwrap();
+            self._master_deconstructor.deconstruct(&entity, &mut self._world);
             self._world.delete_entity(entity);
             entity_count -= 1;
         }
