@@ -250,7 +250,7 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.5 * dt;
+        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.3 * dt;
 
         should_close
     }
