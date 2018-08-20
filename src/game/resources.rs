@@ -1,3 +1,5 @@
+use na::geometry::Point2;
+use ncollide2d::bounding_volume::aabb::AABB;
 use specs::Entity;
 
 use game::SceneID;
@@ -59,6 +61,21 @@ pub struct PhysicsTimeAccumulator {
 impl PhysicsTimeAccumulator {
     pub fn new() -> Self {
         Self { time: 0. }
+    }
+}
+#[derive(Clone, Debug)]
+pub struct ScreenAABB {
+    pub aabb: AABB<f32>,
+}
+
+impl ScreenAABB {
+    pub fn new(min_x: f32, min_y: f32, max_x: f32, max_y: f32) -> Self {
+        let aabb = AABB::new(Point2::new(min_x, min_y), Point2::new(max_x, max_y));
+        Self { aabb }
+    }
+
+    pub fn set(&mut self, min_x: f32, min_y: f32, max_x: f32, max_y: f32) {
+        self.aabb = AABB::new(Point2::new(min_x, min_y), Point2::new(max_x, max_y));
     }
 }
 

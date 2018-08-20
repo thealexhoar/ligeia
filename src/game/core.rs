@@ -1,3 +1,12 @@
+use na::geometry::Point2;
+use ncollide2d::bounding_volume::aabb::AABB;
+use specs::{Dispatcher, DispatcherBuilder, World};
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
+use std::sync::Arc;
+
 use ligeia_graphics::{
     DirectionalSprite, LayeredSprite,
     ManagedCamera,
@@ -15,12 +24,6 @@ use sdl2::{
     EventPump,
     VideoSubsystem
 };
-use specs::{Dispatcher, DispatcherBuilder, World};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::ops::{Deref, DerefMut};
-use std::rc::Rc;
-use std::sync::Arc;
 
 use game::{Scene, SceneID};
 use game::components::*;
@@ -29,6 +32,7 @@ use game::scenes::*;
 use game::systems::*;
 use physics::{construct_world, PhysicsWorld};
 use util::{FabricationDef, MasterDeconstructor, MasterFabricator};
+use sdl2::rect::Point;
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -268,6 +272,12 @@ impl<'a> Core<'a> {
         self._world.add_resource(NextScene::with_id(1));
         self._world.add_resource(PhysicsTimeAccumulator::new());
         self._world.add_resource(PhysicsWorld::new());
+        self._world.add_resource(ScreenAABB::new(
+            internal_width as f32 * -0.5 * PIXELS_TO_METERS,
+            internal_height as f32 * -0.5 * PIXELS_TO_METERS,
+            internal_width as f32 * 0.5 * PIXELS_TO_METERS,
+            internal_height as f32 * 0.5 * PIXELS_TO_METERS
+        ));
         self._world.add_resource(VerticesNeeded::new());
 
         self._master_fabricator.register(ScreenPositionFabricator);
