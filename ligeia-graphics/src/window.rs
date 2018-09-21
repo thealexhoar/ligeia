@@ -54,6 +54,7 @@ impl Window {
         height: u32,
         internal_width: u32,
         internal_height: u32,
+        use_vsync: bool,
         title: &str
     ) -> Self {
         let gl_attr = video.gl_attr();
@@ -110,9 +111,12 @@ impl Window {
             gl::SamplerParameteri(fbo_sampler, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
         }
 
-
-        video.gl_set_swap_interval(SwapInterval::VSync);
-        //video.gl_set_swap_interval(SwapInterval::Immediate);
+        if (use_vsync) {
+            video.gl_set_swap_interval(SwapInterval::VSync);
+        }
+        else {
+            video.gl_set_swap_interval(SwapInterval::Immediate);
+        }
 
         let mut default_projection = ProjectionMatrix::identity();
         //default_projection.set_to_ortho(-1. * (internal_width / 2) as f32, -1. * (internal_height / 2) as f32, internal_width as f32, internal_height as f32);

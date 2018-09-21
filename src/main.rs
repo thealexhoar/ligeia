@@ -25,6 +25,7 @@ fn main() {
         &video_subsystem,
         800, 600,
         400, 300,
+        true,
         "Ligeia 0.0.0"
     );
 

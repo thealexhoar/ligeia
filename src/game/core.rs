@@ -52,6 +52,7 @@ impl<'a> Core<'a> {
         height: u32,
         internal_width: u32,
         internal_height: u32,
+        use_vsync: bool,
         title: &str
     ) -> Self {
         let window = Rc::new(RefCell::new(
@@ -61,6 +62,7 @@ impl<'a> Core<'a> {
                 height,
                 internal_width,
                 internal_height,
+                use_vsync,
                 title
             )
         ));
