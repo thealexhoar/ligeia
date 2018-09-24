@@ -4,10 +4,8 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use ligeia_graphics::{
-    ShaderHandle, ShaderHandler, Sprite,
-    TextureHandle, TextureHandler,
-    Vertex,
-    Window
+    PrimitiveType, ShaderHandle, ShaderHandler, Sprite,
+    TextureHandle, TextureHandler, Vertex, Window
 };
 
 use game::components::{ScreenPosition, WorldRenderable};
@@ -69,6 +67,12 @@ impl<'a> System<'a> for WorldRenderer {
         let mut window = self._window.borrow_mut();
         //let screen_verts = sprite.get_world_vertices(screen_pos.x, screen_pos.y, screen_pos.theta);
 
-        window.draw_vertices(&self._vertices[0..vertices_needed], texture_ref, shader_ref, None);
+        window.draw_vertices(
+            &self._vertices[0..vertices_needed],
+            texture_ref,
+            shader_ref,
+            None,
+            PrimitiveType::TRIANGLES
+        );
     }
 }

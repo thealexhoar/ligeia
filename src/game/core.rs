@@ -183,9 +183,10 @@ impl<'a> Core<'a> {
         core._scenes.insert(
             2,
             testbed(
-                Rc::clone(&shader_handler),
-                Rc::clone(&texture_handler),
-                Rc::clone(&window)
+                &shader_handler,
+                &texture_handler,
+                &window,
+                &mut core._world
             )
         );
 
@@ -261,6 +262,7 @@ impl<'a> Core<'a> {
     }
 
     fn init_world(&mut self, internal_width: u32, internal_height: u32) {
+        self._world.register::<PhysicsObject>();
         self._world.register::<ScreenPosition>();
         self._world.register::<WorldRenderable>();
         self._world.register::<WorldPosition>();
@@ -282,6 +284,7 @@ impl<'a> Core<'a> {
         ));
         self._world.add_resource(VerticesNeeded::new());
 
+        self._master_fabricator.register(PhysicsObjectFabricator);
         self._master_fabricator.register(ScreenPositionFabricator);
         self._master_fabricator.register(WorldPositionFabricator);
         self._master_fabricator.register(WorldRenderableFabricator);

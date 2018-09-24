@@ -1,4 +1,3 @@
-//TODO: refactor to not use sfml
 use gl;
 use gl::types::*;
 use sdl2::video::Window as SDLWindow;
@@ -27,6 +26,8 @@ use {
     Texture,
     Vertex, VERTEX_SIZE
 };
+use PrimitiveType;
+
 //TODO: define a null shader
 pub struct Window {
     _clear_color: Color,
@@ -183,7 +184,8 @@ impl Window {
         vertices: &[Vertex],
         texture: &Texture,
         shader: &Shader,
-        projection: Option<&ProjectionMatrix>
+        projection: Option<&ProjectionMatrix>,
+        primitive_type: PrimitiveType
     ) {
         let vertex_count = vertices.len();
         let buffer_size = vertex_count * VERTEX_SIZE;
@@ -226,7 +228,7 @@ impl Window {
             }
 
 
-            gl::DrawArrays(gl::TRIANGLES, 0, vertex_count as i32);
+            gl::DrawArrays(primitive_type.to_gluint(), 0, vertex_count as i32);
 
             gl::BindSampler(0, 0);
             Texture::unbind();

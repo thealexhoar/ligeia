@@ -30,8 +30,8 @@ impl Fabricator for GroundRenderableFabricator {
         if let Ok(ground_renderable) = data.downcast::<GroundRenderable>() {
             entity_builder.with(ground_renderable.deref().clone())
         }
-            else {
-                entity_builder
-            }
+        else {
+            entity_builder
+        }
     }
 }

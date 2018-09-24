@@ -30,6 +30,13 @@ impl TextureHandler {
         };
 
         out.add_texture(Texture::new_from_memory(
+            1, 1,
+            vec![
+                1., 1., 1., 1.
+            ]
+        ));
+
+        out.add_texture(Texture::new_from_memory(
             2, 2,
             vec![
                 1., 0., 0., 1.,
@@ -181,8 +188,12 @@ impl TextureHandler {
         self._master_texture.texture()
     }
 
-    pub fn get_simple_texture(&self) -> &Texture {
+    pub fn get_blank_texture(&self) -> &Texture {
         self._textures.get(&0).unwrap()
+    }
+
+    pub fn get_simple_texture(&self) -> &Texture {
+        self._textures.get(&1).unwrap()
     }
 
     pub fn get_subrects(&self, filename: String) -> &Vec<FloatRect> {
