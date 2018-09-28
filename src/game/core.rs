@@ -1,5 +1,17 @@
-use na::geometry::Point2;
-use ncollide2d::bounding_volume::aabb::AABB;
+use na::{
+    geometry::Point2,
+    Vector2
+};
+use ncollide2d::{
+    bounding_volume::aabb::AABB,
+    shape::{Cuboid, ShapeHandle}
+};
+use sdl2::{
+    event::Event,
+    EventPump,
+    rect::Point,
+    VideoSubsystem
+};
 use specs::{Dispatcher, DispatcherBuilder, World};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -19,20 +31,14 @@ use ligeia_graphics::{
 };
 use ligeia_softcode::graphics::{LayerDef, TextureDef};
 use ligeia_utils::rect::{FloatRect, UIntRect};
-use sdl2::{
-    event::Event,
-    EventPump,
-    VideoSubsystem
-};
 
 use game::{Scene, SceneID};
 use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
-use physics::{construct_world, PhysicsWorld};
+use physics::{BodyDef, BodyType, ColliderDef, construct_world, METERS_PER_PIX, PhysicsWorld};
 use util::{FabricationDef, MasterDeconstructor, MasterFabricator};
-use sdl2::rect::Point;
 
 pub struct Core<'a> {
     _current_scene: SceneID,
@@ -267,20 +273,24 @@ impl<'a> Core<'a> {
         self._world.register::<WorldRenderable>();
         self._world.register::<WorldPosition>();
 
+        let mut debug_settings = DebugSettings::new();
+        debug_settings.render_physics = true;
 
+        self._world.add_resource(debug_settings);
         self._world.add_resource(DeltaTime::new());
         self._world.add_resource(EntitiesToAdd::new());
         self._world.add_resource(EntitiesToKill::new());
         self._world.add_resource(EntityCount::new());
-        self._world.add_resource(ManagedCamera::new(0., 0., 0., internal_width as f32, internal_height as f32));
+        self._world.add_resource(ManagedCamera::new(50., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(NextScene::with_id(1));
         self._world.add_resource(PhysicsTimeAccumulator::new());
-        self._world.add_resource(PhysicsWorld::new());
+        self._world.add_resource(construct_world());
+        let h_diag = 0.5 * ((internal_width as f32).powi(2) + (internal_height as f32).powi(2)).sqrt();
         self._world.add_resource(ScreenAABB::new(
-            internal_width as f32 * -0.5 * PIXELS_TO_METERS,
-            internal_height as f32 * -0.5 * PIXELS_TO_METERS,
-            internal_width as f32 * 0.5 * PIXELS_TO_METERS,
-            internal_height as f32 * 0.5 * PIXELS_TO_METERS
+            -h_diag * METERS_PER_PIX,
+            -h_diag * METERS_PER_PIX,
+            h_diag * METERS_PER_PIX,
+            h_diag  * METERS_PER_PIX
         ));
         self._world.add_resource(VerticesNeeded::new());
 
@@ -355,7 +365,7 @@ impl<'a> Core<'a> {
         //   #   #         #   #         #     #   # #   # #     //
         //   #   ##### #####   #         ##### ##### ####  ##### //
         ///////////////////////////////////////////////////////////
-        let sq = 85;
+        let sq = 30;
         let mut iter = 0;
         for i in (-sq / 2)..sq / 2 {
             for j in (-sq / 2)..sq / 2 {
@@ -363,13 +373,44 @@ impl<'a> Core<'a> {
                     continue;
                 }
                 let mut test_f_def = FabricationDef::new();
-                test_f_def.add_component(WorldPosition::new(20. * i as f32, 20. * j as f32, (i as f32 * 11.7) + (j as f32 * 3.9)));
+                let x = 20. * i as f32;
+                let y = 20. * j as f32;
+                let theta = (i as f32 * 11.7) + (j as f32 * 3.9);
+                //test_f_def.add_component(WorldPosition::new(x, y, theta));
+                test_f_def.add_component(WorldPosition::new(0., 0., 0.));
                 test_f_def.add_component(ScreenPosition::new());
 
                 match iter % 3 {
-                    0 => test_f_def.add_component(WorldRenderable::new(crate_renderable.clone())),
-                    1 => test_f_def.add_component(WorldRenderable::new(barrel_renderable.clone())),
-                    _ => test_f_def.add_component(WorldRenderable::new(crate_wide_renderable.clone()))
+                    0 => {
+                        test_f_def.add_component(WorldRenderable::new(crate_renderable.clone()));
+                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let mut collider_def = ColliderDef::new(shape_handle);
+                        let mut body_def = BodyDef::new(BodyType::Static, collider_def);
+                        body_def.x = x * METERS_PER_PIX;
+                        body_def.y = y * METERS_PER_PIX;
+                        body_def.theta = theta;
+                        test_f_def.add_component(PhysicsObject::new(&body_def));
+                    },
+                    1 => {
+                        test_f_def.add_component(WorldRenderable::new(barrel_renderable.clone()));
+                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let mut collider_def = ColliderDef::new(shape_handle);
+                        let mut body_def = BodyDef::new(BodyType::Static, collider_def);
+                        body_def.x = x * METERS_PER_PIX;
+                        body_def.y = y * METERS_PER_PIX;
+                        body_def.theta = theta;
+                        test_f_def.add_component(PhysicsObject::new(&body_def));
+                    },
+                    _ => {
+                        test_f_def.add_component(WorldRenderable::new(crate_wide_renderable.clone()));
+                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let mut collider_def = ColliderDef::new(shape_handle);
+                        let mut body_def = BodyDef::new(BodyType::Static, collider_def);
+                        body_def.x = x * METERS_PER_PIX;
+                        body_def.y = y * METERS_PER_PIX;
+                        body_def.theta = theta;
+                        test_f_def.add_component(PhysicsObject::new(&body_def));
+                    }
                 };
                 self._world.write_resource::<EntitiesToAdd>().entities.push(test_f_def);
 
@@ -381,6 +422,13 @@ impl<'a> Core<'a> {
         player_def.add_component(WorldPosition::new(0., 0., 0.));
         player_def.add_component(ScreenPosition::new());
         player_def.add_component(WorldRenderable::new(player_renderable.clone()));
+
+        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+        let mut collider_def = ColliderDef::new(shape_handle);
+        let mut body_def = BodyDef::new(BodyType::Dynamic, collider_def);
+        body_def.linear_velocity = (2., 0.);
+
+        player_def.add_component(PhysicsObject::new(&body_def));
         self._world.write_resource::<EntitiesToAdd>().entities.push(player_def);
     }
 

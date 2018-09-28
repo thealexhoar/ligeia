@@ -41,6 +41,7 @@ impl PhysicsRenderer {
 
 impl<'a> System<'a> for PhysicsRenderer {
     type SystemData = (
+        ReadExpect<'a, DebugSettings>,
         ReadExpect<'a, ManagedCamera>,
         ReadExpect<'a, PhysicsWorld>,
         ReadExpect<'a, VerticesNeeded>,
@@ -50,127 +51,118 @@ impl<'a> System<'a> for PhysicsRenderer {
     fn run(
         &mut self,
         (
+            debug_settings,
             camera,
             world,
             vertices_needed,
             screen_aabb
         ): Self::SystemData
     ) {
-        let mut collision_groups = CollisionGroups::new();
-        collision_groups.enable_self_interaction();
+        if debug_settings.render_physics {
+            let mut collision_groups = CollisionGroups::new();
+            collision_groups.enable_self_interaction();
 
-        let mut vertex_count = 0;
+            let mut vertex_count = 0;
 
-        // implicit screenspace culling
-        for collider in world
-            .collision_world()
-            .interferences_with_aabb(&screen_aabb.aabb, &collision_groups)
-        {
-            // note that an isometry represents a rotation THEN a translation
-            let isometry = collider.position();
-            let rotation: f32 = isometry.rotation.unwrap().re;
-            let (x, y): (f32, f32) = unsafe { (
-                    *isometry.translation.vector.get_unchecked(0, 0),
-                    *isometry.translation.vector.get_unchecked(1, 0)
-            )};
-            // get shape
-            // transform to fit screen
-            // draw that mofo
+            // implicit screenspace culling
+            for collider in world
+                .collision_world()
+                .interferences_with_aabb(&screen_aabb.aabb, &collision_groups)
+                {
+                    // note that an isometry represents a rotation THEN a translation
+                    let isometry = collider.position();
+                    // get shape
+                    // transform to fit screen
+                    // draw that mofo
 
-            let shape = collider.shape();
+                    let shape = collider.shape();
 
-            if shape.is_shape::<Ball<f32>>() {
-                let ball: &Ball<f32> = shape.as_shape().unwrap();
-                //TODO: add ball rendering
+                    if shape.is_shape::<Ball<f32>>() {
+                        let ball: &Ball<f32> = shape.as_shape().unwrap();
+                        //TODO: add ball rendering
+                    }
 
-            }
+                    if shape.is_shape::<Cuboid<f32>>() {
+                        let cuboid: &Cuboid<f32> = shape.as_shape().unwrap();
+                        //TODO: add cuboid rendering
 
-            if shape.is_shape::<Cuboid<f32>>() {
-                let cuboid: &Cuboid<f32> = shape.as_shape().unwrap();
-                //TODO: add cuboid rendering
+                        let phys_x = isometry.translation.vector.x;
+                        let phys_y = isometry.translation.vector.y;
 
-                let phys_x = isometry.translation.vector.x;
-                let phys_y = isometry.translation.vector.y;
+                        let world_angle = -isometry.rotation.angle();
 
-                let world_angle = isometry.rotation.angle();
-                let screen_angle = camera.transform_world_angle(world_angle);
+                        let angle_cos = world_angle.cos();
+                        let angle_sin = world_angle.sin();
 
-                let x_factor = screen_angle.cos();
-                let y_factor = (screen_angle + HALF_PI).sin();
+                        let pix_x = meters_to_pix(phys_x);
+                        let pix_y = meters_to_pix(phys_y);
 
-                let pix_x = meters_to_pix(phys_x);
-                let pix_y = meters_to_pix(phys_y);
+                        let pix_h_width = meters_to_pix(cuboid.half_extents().x);
+                        let pix_h_height = meters_to_pix(cuboid.half_extents().y);
 
-                let pix_h_width = meters_to_pix(cuboid.half_extents().x);
-                let pix_h_height = meters_to_pix(cuboid.half_extents().y);
+                        let mut vertices = vec![
+                            (-1., -1.),
+                            (1., -1.),
+                            (1., 1.),
+                            (-1., 1.)
+                        ].iter().map(
+                            |(x_factor, y_factor)| {
+                                let local_x = x_factor * pix_h_width;
+                                let local_y = y_factor * pix_h_height;
+                                let rot_x = local_x * angle_cos - local_y * angle_sin;
+                                let rot_y = local_x * angle_sin + local_y * angle_cos;
+                                let (vert_x, vert_y) = camera.transform_world_point(
+                                    pix_x + rot_x,
+                                    pix_y + rot_y
+                                );
+                                Vertex::new(
+                                    vert_x, vert_y,
+                                    1.0, 0.05, 0.4, 1.0,
+                                    0., 0.
+                                )
+                            }
+                        ).collect::<Vec<Vertex>>();
 
-                let mut vertices = vec![
-                    Vertex::new(
-                        pix_x + pix_h_width * -x_factor,
-                        pix_y + pix_h_height * -y_factor,
-                        0.4, 0.4, 1.0, 1.0,
-                        0., 0.
-                    ),
-                    Vertex::new(
-                        pix_x + pix_h_width * x_factor,
-                        pix_y + pix_h_height * -y_factor,
-                        0.4, 0.4, 1.0, 1.0,
-                        0., 0.
-                    ),
-                    Vertex::new(
-                        pix_x + pix_h_width * x_factor,
-                        pix_y + pix_h_height * y_factor,
-                        0.4, 0.4, 1.0, 1.0,
-                        0., 0.
-                    ),
-                    Vertex::new(
-                        pix_x + pix_h_width * -x_factor,
-                        pix_y + pix_h_height * y_factor,
-                        0.4, 0.4, 1.0, 1.0,
-                        0., 0.
-                    ),
-                ];
 
-                for v in vertices.iter_mut() {
-                    let (screen_x, screen_y) = camera.transform_world_point(
-                        v.position_x(),
-                        v.position_y()
-                    );
-                    v.set_position_xy(screen_x, screen_y);
+                        if self._vertices.len() < vertex_count + 8 {
+                            let new_len = (self._vertices.len() * 2) + 8;
+                            self._vertices.resize(new_len, Vertex::default());
+                        }
+
+                        let len = self._vertices.len();
+                        self._vertices[vertex_count] = vertices[0];
+                        self._vertices[vertex_count + 1] = vertices[1];
+                        self._vertices[vertex_count + 2] = vertices[1];
+                        self._vertices[vertex_count + 3] = vertices[2];
+                        self._vertices[vertex_count + 4] = vertices[2];
+                        self._vertices[vertex_count + 5] = vertices[3];
+                        self._vertices[vertex_count + 6] = vertices[3];
+                        self._vertices[vertex_count + 7] = vertices[0];
+
+                        vertex_count += 8;
+                    }
                 }
 
-                self._vertices[vertex_count]     = vertices[0];
-                self._vertices[vertex_count + 1] = vertices[1];
-                self._vertices[vertex_count + 2] = vertices[1];
-                self._vertices[vertex_count + 3] = vertices[2];
-                self._vertices[vertex_count + 4] = vertices[2];
-                self._vertices[vertex_count + 5] = vertices[3];
-                self._vertices[vertex_count + 6] = vertices[3];
-                self._vertices[vertex_count + 7] = vertices[0];
+            if vertex_count > 0 {
+                let texture_handler = self._texture_handler.borrow();
+                //let texture_ref = texture_handler.get_texture(sprite.get_tex_handle()).unwrap();
+                let texture_ref = texture_handler.get_blank_texture();
+                //let texture_ref = texture_handler.get_simple_texture();
 
-                vertex_count += 8;
+                let shader_handler = self._shader_handler.borrow();
+                //let shader_ref = shader_handler.get_shader(sprite.get_shader_handle()).unwrap();
+                let shader_ref = shader_handler.get_default().unwrap();
+
+                let mut window = self._window.borrow_mut();
+
+                window.draw_vertices(
+                    &self._vertices[0..vertex_count],
+                    texture_ref,
+                    shader_ref,
+                    None,
+                    PrimitiveType::LINES
+                );
             }
-        }
-
-        if vertex_count > 0 {
-            let texture_handler = self._texture_handler.borrow();
-            //let texture_ref = texture_handler.get_texture(sprite.get_tex_handle()).unwrap();
-            let texture_ref = texture_handler.get_blank_texture();
-            //let texture_ref = texture_handler.get_simple_texture();
-
-            let shader_handler = self._shader_handler.borrow();
-            //let shader_ref = shader_handler.get_shader(sprite.get_shader_handle()).unwrap();
-            let shader_ref = shader_handler.get_default().unwrap();
-
-            let mut window = self._window.borrow_mut();
-
-            window.draw_vertices(
-                &self._vertices[0..vertex_count],
-                texture_ref,
-                shader_ref,
-                None,
-                PrimitiveType::LINES
-            );
         }
     }
 }

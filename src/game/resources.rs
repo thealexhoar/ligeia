@@ -16,6 +16,19 @@ impl DeltaTime {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct DebugSettings {
+    pub render_physics: bool
+}
+
+impl DebugSettings {
+    pub fn new() -> Self {
+        Self {
+            render_physics: true
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct EntitiesToAdd {
     pub entities: Vec<FabricationDef>

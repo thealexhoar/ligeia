@@ -16,6 +16,15 @@ pub struct PhysicsObject {
     pub body_handle: PhysicsHandle
 }
 
+impl PhysicsObject {
+    pub fn new(body_def: &BodyDef) -> Self {
+        Self {
+            body_def: body_def.clone(),
+            body_handle: PhysicsHandle::Uninitialized
+        }
+    }
+}
+
 impl Component for PhysicsObject {
     type Storage = FlaggedStorage<Self, VecStorage<Self>>;
 }

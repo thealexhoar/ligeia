@@ -1,11 +1,10 @@
+use physics::{PIX_PER_METER, METERS_PER_PIX};
 
-pub static PPM: f32 = 32.;
-pub static MPP: f32 = 1. / PPM;
 
 pub fn pix_to_meters(pixels: f32) -> f32 {
-    pixels * MPP
+    pixels * METERS_PER_PIX
 }
 
 pub fn meters_to_pix(meters: f32) -> f32 {
-    meters * PPM
+    meters * PIX_PER_METER
 }

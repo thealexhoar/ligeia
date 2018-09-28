@@ -7,9 +7,9 @@ use physics::consts::*;
 
 pub type PhysicsWorld = World<f32>;
 
-pub fn construct_world() -> Rc<RefCell<PhysicsWorld>> {
+pub fn construct_world() -> PhysicsWorld {
     let mut world = PhysicsWorld::new();
     world.set_timestep(PHYSICS_TIMESTEP);
 
-    Rc::new(RefCell::new(world))
+    world
 }

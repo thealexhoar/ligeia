@@ -164,6 +164,15 @@ impl Window {
         }
     }
 
+    pub fn clear_fbo(&mut self) {
+        unsafe {
+            self._fbo.bind();
+            gl::ClearColor(0., 0., 0., 0.);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+            Framebuffer::unbind();
+        }
+    }
+
 
     //prep for rendering
     pub fn begin(&mut self) {
@@ -198,8 +207,8 @@ impl Window {
         unsafe {
             self._fbo.bind();
             gl::Viewport(0, 0, self._internal_size.0 as i32, self._internal_size.1 as i32);
-            gl::ClearColor(0., 0., 0., 0.);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            //gl::ClearColor(0., 0., 0., 0.);
+            //gl::Clear(gl::COLOR_BUFFER_BIT);
 
             gl::ActiveTexture(gl::TEXTURE0);
             shader.bind(&projection_matrix);
@@ -318,6 +327,8 @@ impl Window {
             gl::BindSampler(0, 0);
             Texture::unbind();
             Shader::unbind();
+
+            self.clear_fbo();
         }
     }
 

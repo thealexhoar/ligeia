@@ -25,11 +25,13 @@ pub fn testbed<'a>(
     );
     let dispatchers = vec![
         Box::new(DispatcherBuilder::new()
-            .with_thread_local(Physics::new(&mut world.write_storage()))
+            .with_thread_local(PhysicsAddRemove::new(&mut world.write_storage()))
+            .with_thread_local(PhysicsUpdate::new())
             .build()
         ),
         Box::new(DispatcherBuilder::new()
-            .with(CameraTransformer, "camera_transformer", &[])
+            .with(PhysicsSetPosition, "physics_set_position", &[])
+            .with(CameraTransformer, "camera_transformer", &["physics_set_position"])
             .with(ScreenSort, "screen_sort", &["camera_transformer"])
             .with_thread_local(world_renderer)
             .with_thread_local(physics_renderer)
