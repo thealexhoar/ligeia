@@ -84,6 +84,13 @@ impl Vertex {
         self.data[COLOR_A] = color.a;
     }
 
+    pub fn set_color_rgba(&mut self, r: f32, g: f32, b: f32, a: f32) {
+        self.data[COLOR_R] = r;
+        self.data[COLOR_G] = g;
+        self.data[COLOR_B] = b;
+        self.data[COLOR_A] = a;
+    }
+
     pub fn set_tex_coords_uv(&mut self, u: f32, v: f32) {
         self.data[TEX_COORD_U] = u;
         self.data[TEX_COORD_V] = v;

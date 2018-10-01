@@ -262,7 +262,7 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        self._world.write_resource::<ManagedCamera>().theta += 2. * 0.3 * dt;
+        //self._world.write_resource::<ManagedCamera>().theta += 2. * 0.3 * dt;
 
         should_close
     }
@@ -281,6 +281,7 @@ impl<'a> Core<'a> {
         self._world.add_resource(EntitiesToAdd::new());
         self._world.add_resource(EntitiesToKill::new());
         self._world.add_resource(EntityCount::new());
+        self._world.add_resource(MajorEntities::new());
         self._world.add_resource(ManagedCamera::new(50., 0., 0., internal_width as f32, internal_height as f32));
         self._world.add_resource(NextScene::with_id(1));
         self._world.add_resource(PhysicsTimeAccumulator::new());
@@ -365,7 +366,7 @@ impl<'a> Core<'a> {
         //   #   #         #   #         #     #   # #   # #     //
         //   #   ##### #####   #         ##### ##### ####  ##### //
         ///////////////////////////////////////////////////////////
-        let sq = 30;
+        let sq = 20;
         let mut iter = 0;
         for i in (-sq / 2)..sq / 2 {
             for j in (-sq / 2)..sq / 2 {
@@ -373,8 +374,8 @@ impl<'a> Core<'a> {
                     continue;
                 }
                 let mut test_f_def = FabricationDef::new();
-                let x = 20. * i as f32;
-                let y = 20. * j as f32;
+                let x = 20. * i as f32 + 0.001 * j as f32;
+                let y = 20. * j as f32 + 0.001 * i as f32;
                 let theta = (i as f32 * 11.7) + (j as f32 * 3.9);
                 //test_f_def.add_component(WorldPosition::new(x, y, theta));
                 test_f_def.add_component(WorldPosition::new(0., 0., 0.));
@@ -413,8 +414,6 @@ impl<'a> Core<'a> {
                     }
                 };
                 self._world.write_resource::<EntitiesToAdd>().entities.push(test_f_def);
-
-
                 iter += 1;
             }
         }
@@ -426,7 +425,8 @@ impl<'a> Core<'a> {
         let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
         let mut collider_def = ColliderDef::new(shape_handle);
         let mut body_def = BodyDef::new(BodyType::Dynamic, collider_def);
-        body_def.linear_velocity = (2., 0.);
+        //body_def.linear_velocity = (2., 0.);
+        body_def.angular_velocity = 2.;
 
         player_def.add_component(PhysicsObject::new(&body_def));
         self._world.write_resource::<EntitiesToAdd>().entities.push(player_def);

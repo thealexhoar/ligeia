@@ -51,6 +51,19 @@ impl EntitiesToKill {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct MajorEntities {
+    pub player: Option<Entity>
+}
+
+impl MajorEntities {
+    pub fn new() -> Self {
+        Self {
+            player: None
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct NextScene {
     pub id: Option<SceneID>

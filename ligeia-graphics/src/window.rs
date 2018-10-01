@@ -236,7 +236,6 @@ impl Window {
                 );
             }
 
-
             gl::DrawArrays(primitive_type.to_gluint(), 0, vertex_count as i32);
 
             gl::BindSampler(0, 0);

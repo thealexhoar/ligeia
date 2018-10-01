@@ -84,7 +84,6 @@ impl<'a> System<'a> for PhysicsRenderer {
 
                     if shape.is_shape::<Cuboid<f32>>() {
                         let cuboid: &Cuboid<f32> = shape.as_shape().unwrap();
-                        //TODO: add cuboid rendering
 
                         let phys_x = isometry.translation.vector.x;
                         let phys_y = isometry.translation.vector.y;

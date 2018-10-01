@@ -25,7 +25,10 @@ pub static PI_FRAC_4: f32 = STD_PI * 0.25;
 pub static TWO_PI: f32 = STD_PI * 2.;
 
 pub fn radians_to_direction8(theta: f32) -> u32 {
-    let theta = theta % TWO_PI;
+    let mut theta = theta % TWO_PI;
+    if theta < 0. {
+        theta += TWO_PI;
+    }
     if theta >= PI_FRAC_8 && theta < 3. * PI_FRAC_8 {
         1
     }

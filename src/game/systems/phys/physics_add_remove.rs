@@ -2,7 +2,10 @@ use na::{
     geometry::{Isometry, Isometry2},
     Vector2
 };
-use nphysics2d::volumetric::Volumetric;
+use nphysics2d::{
+    object::BodyHandle,
+    volumetric::Volumetric
+};
 use specs::{
     BitSet, InsertedFlag, Join, ReadExpect, ReadStorage,
     ReaderId, RemovedFlag, System, WriteExpect, WriteStorage
@@ -13,7 +16,7 @@ use std::rc::Rc;
 
 use game::components::{PhysicsHandle, PhysicsObject};
 use game::resources::{DeltaTime, PhysicsTimeAccumulator};
-use physics::{COLLIDER_MARGIN, PhysicsWorld, PHYSICS_TIMESTEP};
+use physics::{BodyType, COLLIDER_MARGIN, PhysicsWorld, PHYSICS_TIMESTEP};
 use util::PI;
 
 pub struct PhysicsAddRemove {
@@ -73,39 +76,77 @@ impl<'a> System<'a> for PhysicsAddRemove {
                 rigid_body.set_angular_velocity(body_def.angular_velocity);
             }
 
-            let collider_def = &body_def.collider_def;
+            match body_def.body_type {
+                BodyType::Static => {
+                    let collider_def = &body_def.collider_def;
 
-            let collider_handle = world.add_collider(
-                COLLIDER_MARGIN,
-                collider_def.shape.clone(),
-                body_handle,
-                Isometry2::new(
-                    Vector2::x() * collider_def.local_x + Vector2::y() * collider_def.local_y,
-                    collider_def.local_rotation
-                ),
-                collider_def.material.clone()
-            );
+                    let collider_handle = world.add_collider(
+                        COLLIDER_MARGIN,
+                        collider_def.shape.clone(),
+                        BodyHandle::ground(),
+                        Isometry2::new(
+                            Vector2::x() * (collider_def.local_x + body_def.x)
+                            + Vector2::y() * (collider_def.local_y + body_def.y),
+                            collider_def.local_rotation + body_def.theta
+                        ),
+                        collider_def.material.clone()
+                    );
 
-            {
-                let collision_world = world.collision_world_mut();
-                collision_world.set_collision_groups(collider_handle, collider_def.group);
-            }
+                    {
+                        let collision_world = world.collision_world_mut();
+                        collision_world.set_collision_groups(collider_handle, collider_def.group);
+                    }
 
 
-            let sensor_handles = body_def.sensor_defs.iter()
-                .map(|ref sensor_def| {
-                    let (x, y) = sensor_def.local_position;
-                    world.add_sensor(
-                        sensor_def.shape.clone(),
+                    let sensor_handles = body_def.sensor_defs.iter()
+                        .map(|ref sensor_def| {
+                            let (x, y) = sensor_def.local_position;
+                            world.add_sensor(
+                                sensor_def.shape.clone(),
+                                BodyHandle::ground(),
+                                Isometry2::new(
+                                    Vector2::x() * (x + body_def.x) + Vector2::y() * (y + body_def.y),
+                                    sensor_def.local_rotation + body_def.theta
+                                )
+                            )
+                        })
+                        .collect::<Vec<_>>();
+                }
+                _ => {
+                    let collider_def = &body_def.collider_def;
+
+                    let collider_handle = world.add_collider(
+                        COLLIDER_MARGIN,
+                        collider_def.shape.clone(),
                         body_handle,
                         Isometry2::new(
-                            Vector2::x() * x + Vector2::y() * y,
-                            sensor_def.local_rotation
-                        )
-                    )
-                })
-                .collect::<Vec<_>>();
+                            Vector2::x() * collider_def.local_x + Vector2::y() * collider_def.local_y,
+                            collider_def.local_rotation
+                        ),
+                        collider_def.material.clone()
+                    );
 
+                    {
+                        let collision_world = world.collision_world_mut();
+                        collision_world.set_collision_groups(collider_handle, collider_def.group);
+                    }
+
+
+                    let sensor_handles = body_def.sensor_defs.iter()
+                        .map(|ref sensor_def| {
+                            let (x, y) = sensor_def.local_position;
+                            world.add_sensor(
+                                sensor_def.shape.clone(),
+                                body_handle,
+                                Isometry2::new(
+                                    Vector2::x() * x + Vector2::y() * y,
+                                    sensor_def.local_rotation
+                                )
+                            )
+                        })
+                        .collect::<Vec<_>>();
+                }
+            }
             //TODO: do something with colliders/sensors
             phys_object.body_handle = PhysicsHandle::Initialized(body_handle);
         }

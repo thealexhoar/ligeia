@@ -4,6 +4,7 @@ extern crate ligeia_utils;
 extern crate nalgebra as na;
 extern crate ncollide2d;
 extern crate nphysics2d;
+extern crate rlua;
 extern crate sdl2;
 extern crate serde;
 #[macro_use]
@@ -14,6 +15,7 @@ extern crate specs_derive;
 
 mod game;
 mod physics;
+mod scripting;
 mod util;
 
 fn main() {

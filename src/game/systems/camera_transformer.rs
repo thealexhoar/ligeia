@@ -10,7 +10,7 @@ impl<'a> System<'a> for CameraTransformer {
     type SystemData = (ReadExpect<'a, ManagedCamera>, ReadStorage<'a, WorldPosition>, WriteStorage<'a, ScreenPosition>);
 
     fn run(&mut self, (camera, world_pos, mut screen_pos): Self::SystemData) {
-        /*for (world_pos, screen_pos) in (&world_pos, &mut screen_pos).join() {
+        /*for (world_pos, mut screen_pos) in (&world_pos, &mut screen_pos).join() {
             let (screen_x, screen_y) = camera.transform_world_point(world_pos.x, world_pos.y);
             screen_pos.x = screen_x;
             screen_pos.y = screen_y;

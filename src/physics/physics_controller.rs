@@ -1,3 +1,11 @@
 
 //TODO: implement
-pub struct PhysicsController {}
+pub struct PhysicsController {
+
+}
+
+impl PhysicsController {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
