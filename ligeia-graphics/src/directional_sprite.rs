@@ -77,6 +77,9 @@ impl Renderable for DirectionalSprite {
         let direction = radians_to_direction8(camera_theta);
         let tex_coords = &self._tex_rects[direction as usize];
         let vals = vec![0, 1, 2, 0, 2, 3];
+
+        let x = x.round();
+        let y = y.round();
         let mut index = 0;
         for i in vals {
             let (local_x, local_y) = self._vertices[i];

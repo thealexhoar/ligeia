@@ -8,6 +8,7 @@ pub struct BodyDef {
     pub angular_velocity: f32,
     pub linear_velocity: (f32, f32),
     pub density: f32,
+    pub fixed_rotation: bool,
     pub body_type: BodyType,
     pub collider_def: ColliderDef,
     pub sensor_defs: Vec<SensorDef>
@@ -22,6 +23,7 @@ impl BodyDef {
             angular_velocity: 0.,
             linear_velocity: (0., 0.),
             density: 0.,
+            fixed_rotation: false,
             body_type,
             collider_def,
             sensor_defs: Vec::new()

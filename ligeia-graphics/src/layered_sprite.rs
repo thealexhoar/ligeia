@@ -84,6 +84,7 @@ impl Renderable for LayeredSprite {
 
     fn write_to_vertices(&self, x: f32, y: f32, theta: f32, camera_theta: f32, target: &mut [Vertex]) {
         //let theta = theta - camera_theta;
+        let camera_theta = camera_theta;
 
         let mut index_counter = 0;
         for layer in &self._layer_bits {

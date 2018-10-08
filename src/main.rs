@@ -14,12 +14,16 @@ extern crate specs;
 extern crate specs_derive;
 
 mod game;
+mod input;
 mod physics;
 mod scripting;
 mod util;
 
+use std::sync::Arc;
+
 fn main() {
     let sdl = sdl2::init().unwrap();
+    let controller_subsystem = sdl.game_controller().unwrap();
     let video_subsystem = sdl.video().unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
 
@@ -27,12 +31,12 @@ fn main() {
         &video_subsystem,
         800, 600,
         400, 300,
-        true,
+        false,
         "Ligeia 0.0.0"
     );
 
     'gameloop: loop {
-        if core.update(&mut event_pump) {
+        if core.update(&mut event_pump, &controller_subsystem) {
             break 'gameloop;
         }
     }

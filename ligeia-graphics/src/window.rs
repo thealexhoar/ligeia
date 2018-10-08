@@ -76,7 +76,9 @@ impl Window {
         debug_assert_eq!(gl_attr.context_profile(), GLProfile::Core);
         debug_assert_eq!(gl_attr.context_version(), (3, 3));
 
-        let framebuffer = Framebuffer::new(internal_width, internal_height);
+        //let framebuffer = Framebuffer::new(internal_width, internal_height);
+        let framebuffer = Framebuffer::new(width, height);
+
         let mut vao = 0;
         let mut vbo = 0;
         let mut sampler = 0;
@@ -122,6 +124,10 @@ impl Window {
         let mut default_projection = ProjectionMatrix::identity();
         //default_projection.set_to_ortho(-1. * (internal_width / 2) as f32, -1. * (internal_height / 2) as f32, internal_width as f32, internal_height as f32);
         default_projection.set_to_ortho(internal_width as f32, internal_height as f32);
+
+        let proj_x = (internal_width * internal_width) as f32 / width as f32;
+        let proj_y = (internal_height * internal_height) as f32 / height as f32;
+        //default_projection.set_to_ortho(proj_x, proj_y);
 
         Self {
             //_clear_color: Color::new(0.9, 0.7, 0.8, 1.),
@@ -182,6 +188,9 @@ impl Window {
             gl::Enable(gl::TEXTURE_2D);
             gl::Enable(gl::BLEND);
 
+            //anti-aliasing
+            //gl::Enable(gl::POLYGON_SMOOTH);
+
             gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         }
     }
@@ -206,7 +215,8 @@ impl Window {
 
         unsafe {
             self._fbo.bind();
-            gl::Viewport(0, 0, self._internal_size.0 as i32, self._internal_size.1 as i32);
+            //gl::Viewport(0, 0, self._internal_size.0 as i32, self._internal_size.1 as i32);
+            gl::Viewport(0, 0, self._size.0 as i32, self._size.1 as i32);
             //gl::ClearColor(0., 0., 0., 0.);
             //gl::Clear(gl::COLOR_BUFFER_BIT);
 
@@ -340,6 +350,7 @@ impl Window {
     pub fn display(&mut self) {
         self._window.gl_swap_window();
         let duration = self._stopwatch.reset();
+
         self._delta_time = (duration.as_secs() as f64 + duration.subsec_nanos() as f64 * 1e-9) as f32;
     }
 

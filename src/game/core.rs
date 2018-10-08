@@ -4,11 +4,13 @@ use na::{
 };
 use ncollide2d::{
     bounding_volume::aabb::AABB,
-    shape::{Cuboid, ShapeHandle}
+    shape::{Ball, Cuboid, ShapeHandle}
 };
 use sdl2::{
     event::Event,
     EventPump,
+    GameControllerSubsystem,
+    keyboard::Scancode,
     rect::Point,
     VideoSubsystem
 };
@@ -37,6 +39,7 @@ use game::components::*;
 use game::resources::*;
 use game::scenes::*;
 use game::systems::*;
+use input::{Axis, Button, KeyboardController};
 use physics::{BodyDef, BodyType, ColliderDef, construct_world, METERS_PER_PIX, PhysicsWorld};
 use util::{FabricationDef, MasterDeconstructor, MasterFabricator};
 
@@ -129,7 +132,7 @@ impl<'a> Core<'a> {
                         UIntRect::new_square(16, 0, 8),
                     ]
                 },
-                TextureDef {
+                /*TextureDef {
                     filename: String::from("assets/textures/gordy.png"),
                     frames: vec![
                         UIntRect::new_square(0, 0, 16),
@@ -141,8 +144,8 @@ impl<'a> Core<'a> {
                         UIntRect::new_square(96, 0, 16),
                         UIntRect::new_square(112, 0, 16),
                     ]
-                },
-                TextureDef {
+                },*/
+                /*TextureDef {
                     filename: String::from("assets/textures/pedro.png"),
                     frames: vec![
                         UIntRect::new(0, 0, 16, 18),
@@ -154,7 +157,7 @@ impl<'a> Core<'a> {
                         UIntRect::new(96, 0, 16, 18),
                         UIntRect::new(112, 0, 16, 18),
                     ]
-                },
+                },*/
                 TextureDef {
                     filename: String::from("assets/textures/terrence.png"),
                     frames: vec![
@@ -216,7 +219,17 @@ impl<'a> Core<'a> {
         true
     }
 
-    pub fn update(&mut self, event_pump: &mut EventPump) -> bool {
+    pub fn update(
+        &mut self,
+        event_pump: &mut EventPump,
+        controller_subsystem: &GameControllerSubsystem
+    ) -> bool {
+
+        self._world.write_resource::<ControllerBox>().deref_mut().update(
+            event_pump,
+            controller_subsystem
+        );
+
         {
             let mut window = self._window.borrow_mut();
             window.begin();
@@ -262,20 +275,36 @@ impl<'a> Core<'a> {
         self.update_entities();
 
         //test
-        //self._world.write_resource::<ManagedCamera>().theta += 2. * 0.3 * dt;
 
         should_close
     }
 
     fn init_world(&mut self, internal_width: u32, internal_height: u32) {
+        self._world.register::<CameraFollowFlag>();
         self._world.register::<PhysicsObject>();
+        self._world.register::<PlayerFlag>();
         self._world.register::<ScreenPosition>();
         self._world.register::<WorldRenderable>();
         self._world.register::<WorldPosition>();
 
         let mut debug_settings = DebugSettings::new();
-        debug_settings.render_physics = true;
+        debug_settings.render_physics = false;
 
+
+        let keyboard_controller = KeyboardController::new(
+            [
+                (Axis::MOVE_X, (Scancode::A, Scancode::D)),
+                (Axis::MOVE_Y, (Scancode::W, Scancode::S)),
+                (Axis::CAMERA_X, (Scancode::Q, Scancode::E)),
+                (Axis::CAMERA_Y, (Scancode::Q, Scancode::E)), //unneeded?
+            ].iter().cloned().collect(),
+            [
+                (Button::MENU, Scancode::Tab),
+                (Button::PAUSE, Scancode::Escape)
+            ].iter().cloned().collect()
+        );
+
+        self._world.add_resource(Box::new(keyboard_controller) as ControllerBox);
         self._world.add_resource(debug_settings);
         self._world.add_resource(DeltaTime::new());
         self._world.add_resource(EntitiesToAdd::new());
@@ -299,6 +328,9 @@ impl<'a> Core<'a> {
         self._master_fabricator.register(ScreenPositionFabricator);
         self._master_fabricator.register(WorldPositionFabricator);
         self._master_fabricator.register(WorldRenderableFabricator);
+
+        self._master_fabricator.register(FlagFabricator::<CameraFollowFlag>::default());
+        self._master_fabricator.register(FlagFabricator::<PlayerFlag>::default());
 
         let mut crate_layers = LayerDef { layers: HashMap::new() };
         let mut crate_wide_layers = LayerDef { layers: HashMap::new() };
@@ -366,7 +398,7 @@ impl<'a> Core<'a> {
         //   #   #         #   #         #     #   # #   # #     //
         //   #   ##### #####   #         ##### ##### ####  ##### //
         ///////////////////////////////////////////////////////////
-        let sq = 20;
+        let sq = 250;
         let mut iter = 0;
         for i in (-sq / 2)..sq / 2 {
             for j in (-sq / 2)..sq / 2 {
@@ -384,7 +416,7 @@ impl<'a> Core<'a> {
                 match iter % 3 {
                     0 => {
                         test_f_def.add_component(WorldRenderable::new(crate_renderable.clone()));
-                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.55, 0.55)));
                         let mut collider_def = ColliderDef::new(shape_handle);
                         let mut body_def = BodyDef::new(BodyType::Static, collider_def);
                         body_def.x = x * METERS_PER_PIX;
@@ -394,7 +426,7 @@ impl<'a> Core<'a> {
                     },
                     1 => {
                         test_f_def.add_component(WorldRenderable::new(barrel_renderable.clone()));
-                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let shape_handle = ShapeHandle::new(Ball::new(0.4));
                         let mut collider_def = ColliderDef::new(shape_handle);
                         let mut body_def = BodyDef::new(BodyType::Static, collider_def);
                         body_def.x = x * METERS_PER_PIX;
@@ -404,7 +436,7 @@ impl<'a> Core<'a> {
                     },
                     _ => {
                         test_f_def.add_component(WorldRenderable::new(crate_wide_renderable.clone()));
-                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+                        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(1.05, 0.55)));
                         let mut collider_def = ColliderDef::new(shape_handle);
                         let mut body_def = BodyDef::new(BodyType::Static, collider_def);
                         body_def.x = x * METERS_PER_PIX;
@@ -418,15 +450,20 @@ impl<'a> Core<'a> {
             }
         }
         let mut player_def = FabricationDef::new();
+        player_def.add_component(CameraFollowFlag);
+        player_def.add_component(PlayerFlag);
         player_def.add_component(WorldPosition::new(0., 0., 0.));
         player_def.add_component(ScreenPosition::new());
         player_def.add_component(WorldRenderable::new(player_renderable.clone()));
 
-        let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+        //let shape_handle = ShapeHandle::new(Cuboid::new(Vector2::new(0.5, 0.5)));
+        let shape_handle = ShapeHandle::new(Ball::new(0.3));
         let mut collider_def = ColliderDef::new(shape_handle);
+        collider_def.material.friction = 0.;
         let mut body_def = BodyDef::new(BodyType::Dynamic, collider_def);
-        //body_def.linear_velocity = (2., 0.);
-        body_def.angular_velocity = 2.;
+        //body_def.linear_velocity = (0.001, 0.);
+        body_def.fixed_rotation = true;
+        //body_def.angular_velocity = 2.;
 
         player_def.add_component(PhysicsObject::new(&body_def));
         self._world.write_resource::<EntitiesToAdd>().entities.push(player_def);
@@ -434,10 +471,13 @@ impl<'a> Core<'a> {
 
     fn update_entities(&mut self) {
         let mut entity_count = self._world.read_resource::<EntityCount>().count;
+        let mut altered_count = false;
+
         while self._world.read_resource::<EntitiesToAdd>().entities.len() > 0 {
             let f_def = self._world.write_resource::<EntitiesToAdd>().entities.pop().unwrap();
             self._master_fabricator.build(f_def, &mut self._world);
             entity_count += 1;
+            altered_count = true;
         }
 
         while self._world.read_resource::<EntitiesToKill>().entities.len() > 0 {
@@ -445,9 +485,13 @@ impl<'a> Core<'a> {
             self._master_deconstructor.deconstruct(&entity, &mut self._world);
             self._world.delete_entity(entity);
             entity_count -= 1;
+            altered_count = true;
         }
 
-        self._world.write_resource::<EntityCount>().count = entity_count;
+        if altered_count {
+            self._world.write_resource::<EntityCount>().count = entity_count;
+            println!("entity_count = {}", entity_count);
+        }
 
         self._world.maintain();
     }

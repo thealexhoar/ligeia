@@ -55,7 +55,15 @@ impl<'a> System<'a> for ScreenSort {
 
 
         // TODO: optimize sort?
-        entity_vec.sort_by(|e1, e2| (screen_pos.get(*e1).unwrap().y.partial_cmp(&screen_pos.get(*e2).unwrap().y).unwrap()));
+        //entity_vec.sort_by(|e1, e2| (screen_pos.get(*e1).unwrap().y.partial_cmp(&screen_pos.get(*e2).unwrap().y).unwrap()));
+        //unstable is more performant, and we don't need stability anyways
+        entity_vec.sort_unstable_by(
+            |e1, e2| {
+                let y1 = screen_pos.get(*e1).unwrap().y;
+                let y2 = screen_pos.get(*e2).unwrap().y;
+                y1.partial_cmp(&y2).unwrap()
+            }
+        );
 
         let mut vert_sum = 0;
         for e in &entity_vec {

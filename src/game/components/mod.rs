@@ -1,5 +1,4 @@
 mod actor_flags;
-mod behavior;
 mod ground_renderable;
 mod physics_object;
 mod screen_position;
@@ -8,7 +7,6 @@ mod world_renderable;
 mod world_position;
 
 pub use self::actor_flags::*;
-pub use self::behavior::Behavior;
 pub use self::ground_renderable::GroundRenderable;
 pub use self::physics_object::{PhysicsHandle, PhysicsObject, PhysicsObjectFabricator};
 pub use self::screen_position::{ScreenPosition, ScreenPositionFabricator};

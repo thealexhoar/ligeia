@@ -3,7 +3,10 @@ use ncollide2d::bounding_volume::aabb::AABB;
 use specs::Entity;
 
 use game::SceneID;
+use input::Controller;
 use util::FabricationDef;
+
+pub type ControllerBox = Box<Controller + Send + Sync>;
 
 #[derive(Clone, Copy, Debug)]
 pub struct DeltaTime {

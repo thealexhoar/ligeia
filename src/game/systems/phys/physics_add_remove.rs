@@ -60,9 +60,15 @@ impl<'a> System<'a> for PhysicsAddRemove {
                 Vector2::x() * body_def.x + Vector2::y() * body_def.y,
                 body_def.theta// / PI * 180.
             );
+
+            let mut inertia = body_def.collider_def.shape.inertia(1.0);
+            if body_def.fixed_rotation {
+                //inertia.angular *= 0.;
+            }
+
             let body_handle = world.add_rigid_body(
                 body_isometry,
-                body_def.collider_def.shape.inertia(1.0),
+                inertia,
                 body_def.collider_def.shape.center_of_mass()
             );
 
@@ -112,7 +118,7 @@ impl<'a> System<'a> for PhysicsAddRemove {
                         })
                         .collect::<Vec<_>>();
                 }
-                _ => {
+                _ => { //Dynamic or Kinematic
                     let collider_def = &body_def.collider_def;
 
                     let collider_handle = world.add_collider(

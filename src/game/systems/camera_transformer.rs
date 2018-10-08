@@ -19,6 +19,14 @@ impl<'a> System<'a> for CameraTransformer {
         }*/
         (&world_pos, &mut screen_pos).par_join().for_each(|(world_pos, mut screen_pos)| {
             let (screen_x, screen_y) = camera.transform_world_point(world_pos.x, world_pos.y);
+            /*if camera.moving() {
+                screen_pos.x = screen_x;
+                screen_pos.y = screen_y;
+            }
+            else {
+                screen_pos.x = screen_x.round();
+                screen_pos.y = screen_y.round();
+            }*/
             screen_pos.x = screen_x;
             screen_pos.y = screen_y;
             screen_pos.theta = world_pos.theta;

@@ -38,9 +38,11 @@ impl<'a> System<'a> for PhysicsUpdate {
         ): Self::SystemData
     ) {
         let mut temp_dt = delta_time.dt + time_accumulator.time;
+        let mut i = 0;
         while temp_dt > PHYSICS_TIMESTEP {
             world.step();
             temp_dt -= PHYSICS_TIMESTEP;
+            i += 1;
         }
         (*time_accumulator.deref_mut()).time = temp_dt;
     }

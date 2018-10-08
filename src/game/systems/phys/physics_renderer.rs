@@ -79,6 +79,61 @@ impl<'a> System<'a> for PhysicsRenderer {
 
                     if shape.is_shape::<Ball<f32>>() {
                         let ball: &Ball<f32> = shape.as_shape().unwrap();
+                        let phys_x = isometry.translation.vector.x;
+                        let phys_y = isometry.translation.vector.y;
+                        let pix_x = meters_to_pix(phys_x);
+                        let pix_y = meters_to_pix(phys_y);
+                        let pix_r = meters_to_pix(ball.radius());
+                        let world_angle = isometry.rotation.angle();
+
+                        let circle_verts = 12;
+                        let angle_step = TWO_PI / (circle_verts as f32);
+
+                        let vertices = (0..circle_verts)
+                            .map(|x| (x as f32) * angle_step + world_angle)
+                            .map(|theta| {
+                                let local_x = theta.cos() * pix_r;
+                                let local_y = theta.sin() * pix_r;
+                                let (vert_x, vert_y) = camera.transform_world_point(
+                                    pix_x + local_x,
+                                    pix_y + local_y
+                                );
+                                Vertex::new(
+                                    vert_x, vert_y,
+                                    1.0, 0.05, 0.4, 1.0,
+                                    0., 0.
+                                )
+                            })
+                            .collect::<Vec<Vertex>>();
+
+                        let (center_x, center_y) = camera.transform_world_point(pix_x, pix_y);
+                        let center_vertex = Vertex::new(
+                            center_x, center_y,
+                            1.0, 0.05, 0.4, 1.0,
+                            0., 0.
+                        );
+
+                        let vertices_needed = 2 * (circle_verts + 1);
+
+                        if self._vertices.len() < vertex_count + vertices_needed {
+                            let new_len = (self._vertices.len() * 2) + vertices_needed;
+                            self._vertices.resize(new_len, Vertex::default());
+                        }
+
+                        let mut counter = 0;
+                        for i in 1..circle_verts {
+                            let index = vertex_count + counter;
+                            self._vertices[index] = vertices[i - 1];
+                            self._vertices[index+1] = vertices[i];
+                            counter += 2;
+                        }
+                        let index = vertex_count + counter;
+                        self._vertices[index] = vertices[0];
+                        self._vertices[index+1] = vertices[circle_verts-1];
+                        self._vertices[index+2] = vertices[0];
+                        self._vertices[index+3] = center_vertex;
+
+                        vertex_count += vertices_needed;
                         //TODO: add ball rendering
                     }
 
@@ -88,7 +143,7 @@ impl<'a> System<'a> for PhysicsRenderer {
                         let phys_x = isometry.translation.vector.x;
                         let phys_y = isometry.translation.vector.y;
 
-                        let world_angle = -isometry.rotation.angle();
+                        let world_angle = isometry.rotation.angle();
 
                         let angle_cos = world_angle.cos();
                         let angle_sin = world_angle.sin();
@@ -128,7 +183,6 @@ impl<'a> System<'a> for PhysicsRenderer {
                             self._vertices.resize(new_len, Vertex::default());
                         }
 
-                        let len = self._vertices.len();
                         self._vertices[vertex_count] = vertices[0];
                         self._vertices[vertex_count + 1] = vertices[1];
                         self._vertices[vertex_count + 2] = vertices[1];
